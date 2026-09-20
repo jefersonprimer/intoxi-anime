@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Intoxi Anime - Tudo sobre animes, tops, light novels",
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className="h-full antialiased">
-      <body className="min-h-full bg-[#1E1E1E] text-white">{children}</body>
+      <body className="min-h-full bg-[#1E1E1E] text-white">
+        <Header />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

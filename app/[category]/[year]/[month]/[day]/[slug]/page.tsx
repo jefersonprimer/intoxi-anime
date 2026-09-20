@@ -2,8 +2,6 @@ import Link from "next/link";
 import { Clock3, ChevronRight } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { AdminPostActions } from "@/components/AdminPostActions";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
 import { PostAuthor } from "@/components/PostAuthor";
 import { getSessionUser } from "@/lib/auth";
 import {
@@ -84,7 +82,6 @@ export default async function PostPage({
 
   return (
     <div className="min-h-screen bg-[#1E1E1E]">
-      <Header />
       <main>
         <article>
           <section className="mx-auto max-w-5xl px-4 pt-12 sm:px-6 lg:px-8">
@@ -161,7 +158,6 @@ export default async function PostPage({
           </section>
         </article>
       </main>
-      <Footer />
     </div>
   );
 }

@@ -34,6 +34,7 @@ type PostFormProps = {
 export function PostForm({ mode, initialPost }: PostFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
   const isEditing = mode === "edit";
   const [step, setStep] = useState<"edit" | "confirm">("edit");
   const [title, setTitle] = useState(initialPost?.title ?? "");
@@ -69,6 +70,17 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
   function hasContent(): boolean {
     return contentHtml.replace(/<[^>]*>/g, "").trim().length > 0;
   }
+
+  function resizeTitle() {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
+  useEffect(() => {
+    resizeTitle();
+  }, [step]);
 
   async function publishPost() {
     setMessage("");
@@ -129,10 +141,15 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       {step === "edit" ? (
         <section className="grid  p-5">
           <label className="flex flex-col gap-2">
-            <input
+            <textarea
+              ref={titleRef}
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="w-full bg-transparent px-4 py-4 text-[42px] font-normal text-slate-100 outline-none transition placeholder:text-[#b3b3b1]"
+              rows={1}
+              onChange={(event) => {
+                setTitle(event.target.value);
+                resizeTitle();
+              }}
+              className="w-full max-h-[190px] resize-none overflow-hidden bg-transparent px-4 py-4 text-[42px] font-normal leading-tight text-slate-100 outline-none transition placeholder:text-[#b3b3b1]"
               placeholder="Titulo"
             />
           </label>

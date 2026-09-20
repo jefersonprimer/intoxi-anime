@@ -1,5 +1,3 @@
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
 import { HomeHeroCarousel } from "@/components/HomeHeroCarousel";
 import { HomeLatestGrid } from "@/components/HomeLatestGrid";
 import { HomePostSidebar } from "@/components/HomePostSidebar";
@@ -13,7 +11,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#1E1E1E]">
-      <Header />
       <main>
         <div className="grid lg:grid-cols-3">
           <div className="min-w-0 lg:col-span-2">
@@ -26,7 +23,6 @@ export default async function Home() {
           <HomePostSidebar posts={posts.slice(0, 4)} />
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

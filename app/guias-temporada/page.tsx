@@ -1,5 +1,3 @@
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
 import { getSeasonGuidePosts } from "@/lib/posts";
 
@@ -12,7 +10,6 @@ export default async function SeasonGuidesPage() {
 
   return (
     <div className="min-h-screen bg-[#1E1E1E]">
-      <Header />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <section className="mb-8">
           <p className="text-sm font-black uppercase tracking-[0.26em] text-sky-300">
@@ -38,7 +35,6 @@ export default async function SeasonGuidesPage() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

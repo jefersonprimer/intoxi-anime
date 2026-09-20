@@ -22,12 +22,9 @@ export function PostCard({ post }: { post: Post }) {
         ) : null}
       </div>
       <div className="space-y-3 px-4 sm:px-0 sm:pt-4">
-        <Link
-          href="#"
-          className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-[#1E1E1E] bg-[#1e73be] rounded-2xl hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border"
-        >
+        <span className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-[#1E1E1E] bg-[#1e73be] rounded-2xl hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border">
           {post.category}
-        </Link>
+        </span>
         <h3 className="line-clamp-2 text-lg font-black leading-tight text-white">
           {post.title}
         </h3>

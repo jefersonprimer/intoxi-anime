@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 const buttonClass =
   "grid size-8 place-items-center rounded-full text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40";
@@ -19,11 +19,13 @@ export function WordToolbar({
   left,
   tools,
   onAction,
+  extra,
 }: {
   top: number;
   left: number;
   tools: WordTool[];
   onAction: (tool: WordTool) => void;
+  extra?: ReactNode;
 }) {
   if (tools.length === 0) {
     return null;
@@ -50,6 +52,12 @@ export function WordToolbar({
             {tool.icon}
           </button>
         ))}
+        {extra ? (
+          <Fragment>
+            <span className="mx-1 h-6 w-px bg-white/10" />
+            {extra}
+          </Fragment>
+        ) : null}
       </div>
     </div>
   );
