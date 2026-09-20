@@ -28,7 +28,7 @@ button {
 }
 
 .editor-content p.is-editor-empty:first-child::before {
-  color: #64748b;
+  color: #b3b3b1;
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -37,8 +37,7 @@ button {
 
 .post-content {
   color: #dbeafe;
-  font-size: 1.05rem;
-  line-height: 1.85;
+  font-size: 22px;
 }
 
 @keyframes toolbar-pop {
@@ -98,9 +97,27 @@ button {
 
 .post-content img,
 .post-content iframe {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.post-content img[data-media-size="small"],
+.post-content iframe[data-media-size="small"] {
+  width: 50%;
+}
+
+.post-content img[data-media-size="medium"],
+.post-content iframe[data-media-size="medium"] {
+  width: 75%;
+}
+
+.post-content img[data-media-size="large"],
+.post-content iframe[data-media-size="large"] {
+  width: 100%;
 }
 
 .post-content iframe {

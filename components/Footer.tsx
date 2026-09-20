@@ -19,7 +19,7 @@ export function Footer() {
                 alt="Intoxi Anime"
                 width={2172}
                 height={724}
-                className="h-12 sm:h-14 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain brightness-0 invert"
               />
             </Link>
             <p className="max-w-md text-sm text-slate-400">

@@ -3,11 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import {
-  extractFirstImageUrl,
-  getPostPath,
-  type Post,
-} from "@/lib/post-utils";
+import { extractFirstImageUrl, getPostPath, type Post } from "@/lib/post-utils";
 
 const inputClass =
   "h-12 rounded-md border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300";
@@ -47,9 +43,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
   const [bannerImageUrl, setBannerImageUrl] = useState(
     initialPost?.bannerImageUrl ?? "",
   );
-  const [category, setCategory] = useState(
-    initialPost?.category ?? "Noticias",
-  );
+  const [category, setCategory] = useState(initialPost?.category ?? "Noticias");
   const [summary, setSummary] = useState(initialPost?.summary ?? "");
   const [isFeatured, setIsFeatured] = useState(
     initialPost?.isFeatured ?? false,
@@ -69,7 +63,8 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       );
   }, []);
 
-  const effectiveBanner = bannerImageUrl.trim() || extractFirstImageUrl(contentHtml);
+  const effectiveBanner =
+    bannerImageUrl.trim() || extractFirstImageUrl(contentHtml);
 
   function hasContent(): boolean {
     return contentHtml.replace(/<[^>]*>/g, "").trim().length > 0;
@@ -132,7 +127,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       <button type="submit" className="hidden" aria-hidden="true" />
 
       {step === "edit" ? (
-        <section className="grid gap-4 p-5">
+        <section className="grid  p-5">
           <label className="flex flex-col gap-2">
             <input
               value={title}
@@ -142,7 +137,11 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
             />
           </label>
 
-          <RichTextEditor value={contentHtml} onChange={setContentHtml} />
+          <RichTextEditor
+            value={contentHtml}
+            onChange={setContentHtml}
+            autofocus={!isEditing}
+          />
         </section>
       ) : (
         <section className="grid gap-5 p-5">
@@ -158,7 +157,9 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
           </div>
 
           <div className="rounded-md border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-xl font-black text-white">{title || "Sem titulo"}</p>
+            <p className="text-xl font-black text-white">
+              {title || "Sem titulo"}
+            </p>
             <div
               className="post-content pointer-events-none mt-3 max-h-56 overflow-y-auto text-sm"
               dangerouslySetInnerHTML={{ __html: contentHtml }}

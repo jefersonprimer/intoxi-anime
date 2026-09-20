@@ -29,7 +29,6 @@ export function HeaderCreatePostButton() {
       className={className}
       title={isNewPostPage ? "Publicar post" : "Salvar alteracoes"}
     >
-      <Save size={20} aria-hidden="true" />
       <span className="hidden sm:inline">
         {isNewPostPage ? "Publicar post" : "Salvar alteracoes"}
       </span>

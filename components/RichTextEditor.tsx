@@ -1,6 +1,15 @@
 "use client";
 
-import { mergeAttributes, Node as TiptapNode } from "@tiptap/core";
+import { WordToolbar } from "@/components/WordToolbar";
+import { MediaSizeLarge } from "@/components/icons/MediaSizeLarge";
+import { MediaSizeMedium } from "@/components/icons/MediaSizeMedium";
+import { MediaSizeSmall } from "@/components/icons/MediaSizeSmall";
+import {
+  isNodeSelection,
+  Mark as TiptapMark,
+  mergeAttributes,
+  Node as TiptapNode,
+} from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -38,10 +47,86 @@ import {
 } from "react";
 
 const buttonClass =
-  "grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-slate-200 transition hover:border-sky-300/50 hover:bg-sky-400 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40";
+  "grid size-9 place-items-center rounded-full border border-[#1e73be] text-[#1e73be] transition hover:border-sky-300/50 hover:bg-sky-400 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40";
 const activeButtonClass = "border-sky-300/60 bg-sky-400 !text-slate-950";
 const smallInputClass =
   "h-10 w-full rounded-md border border-white/10 bg-slate-950/70 px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300";
+const plusButtonLeftOffset = 24;
+
+const fontSizeConstants = {
+  base: 22,
+  step: 2,
+  min: 12,
+  max: 48,
+};
+
+const FontSizeMark = TiptapMark.create({
+  name: "fontSize",
+  inclusive: false,
+
+  addAttributes() {
+    return {
+      size: {
+        default: null,
+        parseHTML: (element) => element.style.fontSize || null,
+        renderHTML: (attributes) => {
+          if (!attributes.size) {
+            return {};
+          }
+          return { style: `font-size: ${attributes.size}` };
+        },
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span",
+        getAttrs: (element) =>
+          element.style.fontSize ? {} : false,
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["span", mergeAttributes(HTMLAttributes), 0];
+  },
+});
+
+const SizedImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      size: {
+        default: "large",
+        parseHTML: (element) =>
+          element.getAttribute("data-media-size") ?? "large",
+        renderHTML: (attributes) => ({
+          "data-media-size": attributes.size,
+        }),
+      },
+    };
+  },
+});
+
+const SizedYoutube = Youtube.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      size: {
+        default: "large",
+        parseHTML: (element) =>
+          element.getAttribute("data-media-size") ?? "large",
+        renderHTML: (attributes) => ({
+          "data-media-size": attributes.size,
+        }),
+      },
+    };
+  },
+});
+
+
 
 type DataField = {
   label: string;
@@ -182,6 +267,16 @@ type Tool = {
   persist?: boolean;
 };
 
+function positionsDiffer(
+  a: { top: number; left: number } | null,
+  b: { top: number; left: number } | null,
+): boolean {
+  if (!a || !b) {
+    return a !== b;
+  }
+  return Math.abs(a.top - b.top) >= 1 || Math.abs(a.left - b.left) >= 1;
+}
+
 const ImageDataBlock = TiptapNode.create({
   name: "imageDataBlock",
   group: "block",
@@ -308,9 +403,11 @@ const ImageDataBlock = TiptapNode.create({
 export function RichTextEditor({
   value,
   onChange,
+  autofocus = false,
 }: {
   value: string;
   onChange: (value: string) => void;
+  autofocus?: boolean;
 }) {
   const [isAddingImageData, setIsAddingImageData] = useState(false);
   const [imageDataUrl, setImageDataUrl] = useState("");
@@ -335,7 +432,17 @@ export function RichTextEditor({
     setDataLinks([{ label: "", url: "" }]);
   }, []);
 
-  const [anchor, setAnchor] = useState<{ top: number } | null>(null);
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+  const [selectionAnchor, setSelectionAnchor] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [mediaAnchor, setMediaAnchor] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const [panelTop, setPanelTop] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const editHandlerRef = useRef<
@@ -343,15 +450,19 @@ export function RichTextEditor({
   >(() => {});
   const floatingRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef(0);
-  const lastTopRef = useRef(0);
+  const lastAnchorRef = useRef<{ top: number; left: number } | null>(null);
+  const lastSelectionRef = useRef<{ top: number; left: number } | null>(null);
+  const lastMediaRef = useRef<{ top: number; left: number } | null>(null);
   const insertPosRef = useRef(1);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
+    autofocus,
     extensions: [
       StarterKit,
       ImageDataBlock,
+      FontSizeMark,
       Placeholder.configure({
         placeholder: "Conteudo",
       }),
@@ -360,10 +471,10 @@ export function RichTextEditor({
         autolink: true,
         defaultProtocol: "https",
       }),
-      Image.configure({
+      SizedImage.configure({
         allowBase64: false,
       }),
-      Youtube.configure({
+      SizedYoutube.configure({
         controls: true,
         nocookie: true,
       }),
@@ -388,6 +499,18 @@ export function RichTextEditor({
     }
 
     if (!editor.view.hasFocus()) {
+      if (
+        lastAnchorRef.current !== null ||
+        lastSelectionRef.current !== null ||
+        lastMediaRef.current !== null
+      ) {
+        lastAnchorRef.current = null;
+        lastSelectionRef.current = null;
+        lastMediaRef.current = null;
+        setAnchor(null);
+        setSelectionAnchor(null);
+        setMediaAnchor(null);
+      }
       return;
     }
 
@@ -396,18 +519,123 @@ export function RichTextEditor({
       return;
     }
 
-    const from = editor.state.selection.from;
+    const { from, to } = editor.state.selection;
     insertPosRef.current = from;
+
+    if (isNodeSelection(editor.state.selection)) {
+      if (lastAnchorRef.current !== null) {
+        lastAnchorRef.current = null;
+        setAnchor(null);
+      }
+      if (lastSelectionRef.current !== null) {
+        lastSelectionRef.current = null;
+        setSelectionAnchor(null);
+      }
+
+      const nodeTypeName = editor.state.selection.node.type.name;
+      if (nodeTypeName !== "image" && nodeTypeName !== "youtube") {
+        if (lastMediaRef.current !== null) {
+          lastMediaRef.current = null;
+          setMediaAnchor(null);
+        }
+        return;
+      }
+
+      const nodeDom = editor.view.nodeDOM(from);
+      if (nodeDom instanceof HTMLElement) {
+        const mediaRect = nodeDom.getBoundingClientRect();
+        if (mediaRect.width > 0 || mediaRect.height > 0) {
+          const next = {
+            top: mediaRect.top - rect.top,
+            left: Math.min(
+              Math.max(
+                mediaRect.left + mediaRect.width / 2 - rect.left,
+                28,
+              ),
+              rect.width - 28,
+            ),
+          };
+          if (positionsDiffer(next, lastMediaRef.current)) {
+            lastMediaRef.current = next;
+            setMediaAnchor(next);
+          }
+        }
+      }
+      return;
+    }
+
+    if (from !== to) {
+      const domSelection = window.getSelection();
+      const selectedText = editor.state.doc.textBetween(from, to, " ");
+      if (
+        domSelection &&
+        !domSelection.isCollapsed &&
+        domSelection.rangeCount > 0 &&
+        editor.view.dom.contains(domSelection.anchorNode) &&
+        selectedText.trim().length > 0
+      ) {
+        const selectionRect = domSelection
+          .getRangeAt(0)
+          .getBoundingClientRect();
+        if (selectionRect.width > 0 || selectionRect.height > 0) {
+          const next = {
+            top: selectionRect.top - rect.top,
+            left: Math.min(
+              Math.max(
+                selectionRect.left + selectionRect.width / 2 - rect.left,
+                28,
+              ),
+              rect.width - 28,
+            ),
+          };
+          if (positionsDiffer(next, lastSelectionRef.current)) {
+            lastSelectionRef.current = next;
+            setSelectionAnchor(next);
+          }
+        }
+      } else if (lastSelectionRef.current !== null) {
+        lastSelectionRef.current = null;
+        setSelectionAnchor(null);
+      }
+
+      if (lastAnchorRef.current !== null) {
+        lastAnchorRef.current = null;
+        setAnchor(null);
+      }
+      return;
+    }
+
+    if (lastMediaRef.current !== null) {
+      lastMediaRef.current = null;
+      setMediaAnchor(null);
+    }
+
+    if (lastSelectionRef.current !== null) {
+      lastSelectionRef.current = null;
+      setSelectionAnchor(null);
+    }
+
+    const block = editor.state.doc.resolve(from).parent;
+    if (!block.isTextblock || block.childCount > 0) {
+      if (lastAnchorRef.current !== null) {
+        lastAnchorRef.current = null;
+        setAnchor(null);
+      }
+      return;
+    }
 
     const coord = editor.view.coordsAtPos(from);
     if (!coord) {
       return;
     }
 
-    const nextTop = (coord.top + coord.bottom) / 2 - rect.top;
-    if (Math.abs(nextTop - lastTopRef.current) >= 1) {
-      lastTopRef.current = nextTop;
-      setAnchor({ top: nextTop });
+    const next = {
+      top: (coord.top + coord.bottom) / 2 - rect.top,
+      left: coord.left - rect.left - plusButtonLeftOffset,
+    };
+    if (positionsDiffer(next, lastAnchorRef.current)) {
+      lastAnchorRef.current = next;
+      setAnchor(next);
     }
   }, [editor]);
 
@@ -617,6 +845,41 @@ export function RichTextEditor({
       .run();
   }
 
+  function getSelectionFontSize(): number {
+    const current = editor?.getAttributes("fontSize").size as
+      | string
+      | undefined;
+    const parsed = current ? Number.parseInt(current, 10) : Number.NaN;
+    return Number.isFinite(parsed) ? parsed : fontSizeConstants.base;
+  }
+
+  function changeFontSize(delta: number) {
+    const next = Math.min(
+      Math.max(
+        getSelectionFontSize() + delta,
+        fontSizeConstants.min,
+      ),
+      fontSizeConstants.max,
+    );
+    editor
+      ?.chain()
+      .focus()
+      .setMark("fontSize", { size: `${next}px` })
+      .run();
+  }
+
+  function setMediaSize(size: string) {
+    const selection = editor?.state.selection;
+    if (!selection || !isNodeSelection(selection)) {
+      return;
+    }
+    const nodeTypeName = selection.node.type.name;
+    if (nodeTypeName !== "image" && nodeTypeName !== "youtube") {
+      return;
+    }
+    editor?.chain().focus().updateAttributes(nodeTypeName, { size }).run();
+  }
+
   const isBold = editor?.isActive("bold") ?? false;
   const isItalic = editor?.isActive("italic") ?? false;
   const isHeading = editor?.isActive("heading", { level: 2 }) ?? false;
@@ -726,6 +989,97 @@ export function RichTextEditor({
     : [];
 
   const toolGroups = [textGroup, blockGroup, mediaGroup];
+
+  const wordTools: Tool[] = editor
+    ? [
+        {
+          key: "bold",
+          icon: <Bold size={18} />,
+          label: "Negrito (Ctrl+B)",
+          active: isBold,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleBold().run(),
+        },
+        {
+          key: "italic",
+          icon: <Italic size={18} />,
+          label: "Italico (Ctrl+I)",
+          active: isItalic,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleItalic().run(),
+        },
+        {
+          key: "fontSizeUp",
+          icon: (
+            <span
+              aria-hidden="true"
+              className="text-xl font-black leading-none"
+            >
+              T
+            </span>
+          ),
+          label: "Aumentar texto",
+          persist: true,
+          onClick: () => changeFontSize(fontSizeConstants.step),
+        },
+        {
+          key: "fontSizeDown",
+          icon: (
+            <span
+              aria-hidden="true"
+              className="text-xs font-black leading-none"
+            >
+              T
+            </span>
+          ),
+          label: "Diminuir texto",
+          persist: true,
+          onClick: () => changeFontSize(-fontSizeConstants.step),
+        },
+        {
+          key: "link",
+          icon: <LinkIcon size={18} />,
+          label: "Link",
+          active: isLink,
+          onClick: setLink,
+        },
+      ]
+    : [];
+
+  const selectedMediaSize =
+    editor && isNodeSelection(editor.state.selection)
+      ? ((editor.state.selection.node.attrs.size as string | undefined) ??
+        "large")
+      : "large";
+
+  const mediaSizeTools: Tool[] = editor
+    ? [
+        {
+          key: "small",
+          icon: <MediaSizeSmall />,
+          label: "Tamanho pequeno",
+          active: selectedMediaSize === "small",
+          persist: true,
+          onClick: () => setMediaSize("small"),
+        },
+        {
+          key: "medium",
+          icon: <MediaSizeMedium />,
+          label: "Tamanho medio",
+          active: selectedMediaSize === "medium",
+          persist: true,
+          onClick: () => setMediaSize("medium"),
+        },
+        {
+          key: "large",
+          icon: <MediaSizeLarge />,
+          label: "Tamanho grande",
+          active: selectedMediaSize === "large",
+          persist: true,
+          onClick: () => setMediaSize("large"),
+        },
+      ]
+    : [];
 
   function runTool(tool: Tool) {
     tool.onClick();
@@ -907,22 +1261,23 @@ export function RichTextEditor({
         {!isAddingImageData && anchor && editor ? (
           <div
             ref={floatingRef}
-            className="pointer-events-none absolute inset-x-0 z-30 transition-[top] duration-150 ease-out"
-            style={{ top: anchor.top }}
+            className="pointer-events-none absolute z-30 transition-[top,left] duration-150 ease-out"
+            style={{ top: anchor.top, left: anchor.left }}
           >
-            <div className="relative flex w-fit -translate-y-1/2 items-center">
+            <div className="relative h-0 w-0">
               <button
                 type="button"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label={
                   menuOpen ? "Fechar ferramentas" : "Abrir ferramentas"
                 }
                 aria-expanded={menuOpen}
                 title="Ferramentas de formatacao"
-                className="toolbar-pop pointer-events-auto grid size-8 shrink-0 -ml-8 place-items-center rounded-full border border-white hover:border-[#f2f2f2] text-white hover:text-[#f2f2f2] transition "
+                className="toolbar-pop pointer-events-auto absolute grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white p-1.5 text-white transition hover:border-[#f2f2f2] hover:text-[#f2f2f2]"
               >
                 <Plus
-                  size={20}
+                  size={24}
                   aria-hidden="true"
                   className={`transition-transform duration-200 ${
                     menuOpen ? "rotate-45" : ""
@@ -931,7 +1286,10 @@ export function RichTextEditor({
               </button>
 
               {menuOpen ? (
-                <div className="toolbar-pop-right pointer-events-auto ml-2 flex max-w-[min(26rem,calc(100vw-6rem))] flex-wrap items-center gap-0.5 ">
+                <div
+                  className="toolbar-pop-right pointer-events-auto absolute left-6 top-0 flex -translate-y-1/2 items-center gap-0.5"
+                  onMouseDown={(event) => event.preventDefault()}
+                >
                   {toolGroups.map((group, groupIndex) => (
                     <Fragment key={groupIndex}>
                       {groupIndex > 0 ? (
@@ -957,6 +1315,24 @@ export function RichTextEditor({
               ) : null}
             </div>
           </div>
+        ) : null}
+
+        {!isAddingImageData && selectionAnchor && editor ? (
+          <WordToolbar
+            top={selectionAnchor.top}
+            left={selectionAnchor.left}
+            tools={wordTools}
+            onAction={runTool}
+          />
+        ) : null}
+
+        {!isAddingImageData && mediaAnchor && editor ? (
+          <WordToolbar
+            top={mediaAnchor.top}
+            left={mediaAnchor.left}
+            tools={mediaSizeTools}
+            onAction={runTool}
+          />
         ) : null}
       </div>
     </div>
