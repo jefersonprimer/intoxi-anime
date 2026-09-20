@@ -1,0 +1,8 @@
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS name TEXT,
+  ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+ALTER TABLE posts
+  ADD COLUMN IF NOT EXISTS author_id UUID REFERENCES users(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS posts_author_id_idx ON posts (author_id);

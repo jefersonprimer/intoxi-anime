@@ -1,0 +1,964 @@
+"use client";
+
+import { mergeAttributes, Node as TiptapNode } from "@tiptap/core";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import Youtube from "@tiptap/extension-youtube";
+import {
+  EditorContent,
+  NodeViewProps,
+  NodeViewWrapper,
+  ReactNodeViewRenderer,
+  useEditor,
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import {
+  Bold,
+  Columns2,
+  Heading2,
+  ImagePlus,
+  Italic,
+  LinkIcon,
+  List,
+  ListOrdered,
+  PlaySquare,
+  Plus,
+  Quote,
+  Trash2,
+} from "lucide-react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from "react";
+
+const buttonClass =
+  "grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-slate-200 transition hover:border-sky-300/50 hover:bg-sky-400 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40";
+const activeButtonClass = "border-sky-300/60 bg-sky-400 !text-slate-950";
+const smallInputClass =
+  "h-10 w-full rounded-md border border-white/10 bg-slate-950/70 px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300";
+
+type DataField = {
+  label: string;
+  value: string;
+};
+
+type DataLink = {
+  label: string;
+  url: string;
+};
+
+type ImageDataBlockAttrs = {
+  imageUrl: string;
+  title: string;
+  details: string;
+  href: string;
+  dataFields: string;
+  links: string;
+};
+
+const IMAGE_DATA_EDIT_EVENT = "intoxi:edit-image-data-block";
+
+function parseDataFields(value: string): DataField[] {
+  try {
+    const fields = JSON.parse(value) as DataField[];
+    return Array.isArray(fields) ? fields : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseDataLinks(value: string): DataLink[] {
+  try {
+    const links = JSON.parse(value) as DataLink[];
+    return Array.isArray(links) ? links : [];
+  } catch {
+    return [];
+  }
+}
+
+function ImageDataBlockView(props: NodeViewProps) {
+  const { node, selected } = props;
+  const attrs = node.attrs as unknown as ImageDataBlockAttrs;
+  let fields = parseDataFields(attrs.dataFields);
+  if (fields.length === 0 && attrs.details) {
+    fields = [{ label: "Informação", value: attrs.details }];
+  }
+  const links = parseDataLinks(attrs.links);
+
+  function handleEdit(event: ReactMouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    let pos = -1;
+    try {
+      pos = props.getPos() ?? -1;
+    } catch {
+      pos = -1;
+    }
+    event.currentTarget.dispatchEvent(
+      new CustomEvent(IMAGE_DATA_EDIT_EVENT, {
+        bubbles: true,
+        detail: { attrs, pos },
+      }),
+    );
+  }
+
+  function preventDefault(event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  return (
+    <NodeViewWrapper className="image-data-block-view" contentEditable={false}>
+      <div
+        className={`image-data-block ${
+          selected ? "image-data-block--selected" : ""
+        }`}
+      >
+        {attrs.imageUrl ? (
+          <figure className="image-data-block__media">
+            <img src={attrs.imageUrl} alt={attrs.title} />
+          </figure>
+        ) : null}
+        <div className="image-data-block__content">
+          {attrs.title ? <h3>{attrs.title}</h3> : null}
+          {fields.length > 0 ? (
+            <dl className="image-data-block__fields">
+              {fields.map((field, index) => (
+                <Fragment key={index}>
+                  <dt>{field.label}</dt>
+                  <dd>{field.value}</dd>
+                </Fragment>
+              ))}
+            </dl>
+          ) : null}
+          {links.length > 0 ? (
+            <div className="image-data-block__links">
+              {links.map((link, index) => (
+                <a
+                  key={index}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={preventDefault}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
+          {attrs.href ? (
+            <a
+              href={attrs.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={preventDefault}
+            >
+              Abrir referencia
+            </a>
+          ) : null}
+        </div>
+      </div>
+      <div className="image-data-block-view__controls">
+        <button type="button" onClick={handleEdit}>
+          Editar
+        </button>
+      </div>
+    </NodeViewWrapper>
+  );
+}
+
+type Tool = {
+  key: string;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+  persist?: boolean;
+};
+
+const ImageDataBlock = TiptapNode.create({
+  name: "imageDataBlock",
+  group: "block",
+  atom: true,
+
+  addAttributes() {
+    return {
+      imageUrl: {
+        default: "",
+        parseHTML: (element) =>
+          element.getAttribute("imageUrl") ?? element.getAttribute("imageurl"),
+      },
+      title: { default: "" },
+      details: { default: "" },
+      href: { default: "" },
+      dataFields: {
+        default: "[]",
+        parseHTML: (element) =>
+          element.getAttribute("dataFields") ??
+          element.getAttribute("datafields"),
+      },
+      links: { default: "[]" },
+    };
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageDataBlockView);
+  },
+
+  parseHTML() {
+    return [{ tag: "section[data-type='image-data-block']" }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const href = String(HTMLAttributes.href ?? "");
+    const title = String(HTMLAttributes.title ?? "");
+    let dataFields: DataField[] = [];
+
+    try {
+      dataFields = JSON.parse(
+        String(HTMLAttributes.dataFields ?? "[]"),
+      ) as DataField[];
+    } catch {
+      dataFields = [];
+    }
+
+    if (dataFields.length === 0 && HTMLAttributes.details) {
+      dataFields = [
+        { label: "Informação", value: String(HTMLAttributes.details) },
+      ];
+    }
+
+    let links: DataLink[] = [];
+
+    try {
+      links = JSON.parse(String(HTMLAttributes.links ?? "[]")) as DataLink[];
+    } catch {
+      links = [];
+    }
+
+    return [
+      "section",
+      mergeAttributes(HTMLAttributes, {
+        class: "image-data-block",
+        "data-type": "image-data-block",
+      }),
+      [
+        "figure",
+        { class: "image-data-block__media" },
+        [
+          "img",
+          {
+            src: HTMLAttributes.imageUrl,
+            alt: title,
+          },
+        ],
+      ],
+      [
+        "div",
+        { class: "image-data-block__content" },
+        ["h3", {}, title],
+        [
+          "dl",
+          { class: "image-data-block__fields" },
+          ...dataFields.flatMap((field) => [
+            ["dt", {}, field.label],
+            ["dd", {}, field.value],
+          ]),
+        ],
+        ...(links.length > 0
+          ? [
+              [
+                "div",
+                { class: "image-data-block__links" },
+                ...links.map((link) => [
+                  "a",
+                  {
+                    href: link.url,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    class: "image-data-block__link",
+                  },
+                  link.label,
+                ]),
+              ],
+            ]
+          : []),
+        href
+          ? [
+              "a",
+              {
+                href,
+                target: "_blank",
+                rel: "noopener noreferrer",
+              },
+              "Abrir referencia",
+            ]
+          : ["span", { class: "image-data-block__empty" }, ""],
+      ],
+    ];
+  },
+});
+
+export function RichTextEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [isAddingImageData, setIsAddingImageData] = useState(false);
+  const [imageDataUrl, setImageDataUrl] = useState("");
+  const [imageDataTitle, setImageDataTitle] = useState("");
+  const [imageDataHref, setImageDataHref] = useState("");
+  const [dataFields, setDataFields] = useState<DataField[]>([
+    { label: "", value: "" },
+  ]);
+  const [dataLinks, setDataLinks] = useState<DataLink[]>([
+    { label: "", url: "" },
+  ]);
+  const [editingTarget, setEditingTarget] = useState<{ pos: number } | null>(
+    null,
+  );
+
+  const resetForm = useCallback(() => {
+    setEditingTarget(null);
+    setImageDataUrl("");
+    setImageDataTitle("");
+    setImageDataHref("");
+    setDataFields([{ label: "", value: "" }]);
+    setDataLinks([{ label: "", url: "" }]);
+  }, []);
+
+  const [anchor, setAnchor] = useState<{ top: number } | null>(null);
+  const [panelTop, setPanelTop] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const editHandlerRef = useRef<
+    (attrs: ImageDataBlockAttrs, pos: number) => void
+  >(() => {});
+  const floatingRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef(0);
+  const lastTopRef = useRef(0);
+  const insertPosRef = useRef(1);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit,
+      ImageDataBlock,
+      Placeholder.configure({
+        placeholder: "Conteudo",
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        defaultProtocol: "https",
+      }),
+      Image.configure({
+        allowBase64: false,
+      }),
+      Youtube.configure({
+        controls: true,
+        nocookie: true,
+      }),
+    ],
+    content: value,
+    editorProps: {
+      attributes: {
+        class:
+          "min-h-72  border-white/10 px-4 py-4 text-slate-100 outline-none",
+      },
+    },
+    onUpdate({ editor }) {
+      onChange(editor.getHTML());
+    },
+  });
+
+  const [, setVersion] = useState(0);
+
+  const updateAnchor = useCallback(() => {
+    if (!editor) {
+      return;
+    }
+
+    if (!editor.view.hasFocus()) {
+      return;
+    }
+
+    const rect = editor.view.dom.getBoundingClientRect();
+    if (rect.width === 0) {
+      return;
+    }
+
+    const from = editor.state.selection.from;
+    insertPosRef.current = from;
+
+    const coord = editor.view.coordsAtPos(from);
+    if (!coord) {
+      return;
+    }
+
+    const nextTop = (coord.top + coord.bottom) / 2 - rect.top;
+    if (Math.abs(nextTop - lastTopRef.current) >= 1) {
+      lastTopRef.current = nextTop;
+      setAnchor({ top: nextTop });
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const schedule = () => {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = requestAnimationFrame(() => {
+        updateAnchor();
+        setVersion((v) => v + 1);
+      });
+    };
+
+    editor.on("transaction", schedule);
+    editor.on("selectionUpdate", schedule);
+    editor.on("focus", schedule);
+    editor.on("blur", schedule);
+    updateAnchor();
+
+    return () => {
+      cancelAnimationFrame(frameRef.current);
+      editor.off("transaction", schedule);
+      editor.off("selectionUpdate", schedule);
+      editor.off("focus", schedule);
+      editor.off("blur", schedule);
+    };
+  }, [editor, updateAnchor]);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        floatingRef.current &&
+        !floatingRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) {
+      return;
+    }
+
+    function handleEditEvent(event: Event) {
+      const custom = event as CustomEvent<{
+        attrs: ImageDataBlockAttrs;
+        pos: number;
+      }>;
+      if (!custom.detail) {
+        return;
+      }
+      editHandlerRef.current(custom.detail.attrs, custom.detail.pos);
+    }
+
+    root.addEventListener(IMAGE_DATA_EDIT_EVENT, handleEditEvent);
+    return () =>
+      root.removeEventListener(IMAGE_DATA_EDIT_EVENT, handleEditEvent);
+  }, []);
+
+  function addImage() {
+    const url = window.prompt("URL da imagem");
+    if (url) {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }
+
+  function startEditingNode(attrs: ImageDataBlockAttrs, pos: number) {
+    setEditingTarget(pos >= 0 ? { pos } : null);
+    setImageDataUrl(attrs.imageUrl);
+    setImageDataTitle(attrs.title);
+    setImageDataHref(attrs.href);
+    const fields = parseDataFields(attrs.dataFields);
+    setDataFields(fields.length > 0 ? fields : [{ label: "", value: "" }]);
+    const links = parseDataLinks(attrs.links);
+    setDataLinks(links.length > 0 ? links : [{ label: "", url: "" }]);
+
+    if (editor && pos >= 0) {
+      const rect = editor.view.dom.getBoundingClientRect();
+      const coord = editor.view.coordsAtPos(pos);
+      setPanelTop(coord ? (coord.top + coord.bottom) / 2 - rect.top + 14 : 0);
+    }
+
+    setIsAddingImageData(true);
+  }
+
+  useEffect(() => {
+    editHandlerRef.current = startEditingNode;
+  });
+
+  function updateImageDataBlock(attrs: ImageDataBlockAttrs, pos: number) {
+    let applied = false;
+    editor?.commands.command(({ tr, state, dispatch }) => {
+      const node = state.doc.nodeAt(pos);
+      if (!node || node.type.name !== "imageDataBlock") {
+        return false;
+      }
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, ...attrs });
+      if (dispatch) {
+        dispatch(tr);
+      }
+      applied = true;
+      return true;
+    });
+    return applied;
+  }
+
+  function insertImageDataBlock() {
+    if (!imageDataUrl.trim() || !imageDataTitle.trim()) {
+      return;
+    }
+
+    const validFields = dataFields.filter(
+      (field) => field.label.trim() || field.value.trim(),
+    );
+    const validLinks = dataLinks.filter(
+      (link) => link.label.trim() && link.url.trim(),
+    );
+    const attrs = {
+      imageUrl: imageDataUrl.trim(),
+      title: imageDataTitle.trim(),
+      details: validFields
+        .map((field) => `${field.label}: ${field.value}`)
+        .join("\n"),
+      href: imageDataHref.trim(),
+      dataFields: JSON.stringify(validFields),
+      links: JSON.stringify(validLinks),
+    };
+
+    const target = editingTarget;
+    if (target) {
+      if (!updateImageDataBlock(attrs, target.pos)) {
+        return;
+      }
+    } else {
+      editor
+        ?.chain()
+        .focus()
+        .insertContentAt(insertPosRef.current, {
+          type: "imageDataBlock",
+          attrs,
+        })
+        .run();
+    }
+
+    resetForm();
+    setIsAddingImageData(false);
+    editor?.commands.focus();
+  }
+
+  function updateDataField(index: number, key: keyof DataField, value: string) {
+    setDataFields((current) =>
+      current.map((field, fieldIndex) =>
+        fieldIndex === index ? { ...field, [key]: value } : field,
+      ),
+    );
+  }
+
+  function updateDataLink(index: number, key: keyof DataLink, value: string) {
+    setDataLinks((current) =>
+      current.map((link, linkIndex) =>
+        linkIndex === index ? { ...link, [key]: value } : link,
+      ),
+    );
+  }
+
+  function addYoutube() {
+    const src = window.prompt("URL do video do YouTube");
+    if (src) {
+      editor
+        ?.chain()
+        .focus()
+        .setYoutubeVideo({ src, width: 900, height: 506 })
+        .run();
+    }
+  }
+
+  function setLink() {
+    const previousUrl = editor?.getAttributes("link").href;
+    const url = window.prompt("URL do link", previousUrl);
+
+    if (url === null) {
+      return;
+    }
+
+    if (url === "") {
+      editor?.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    editor
+      ?.chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
+  }
+
+  const isBold = editor?.isActive("bold") ?? false;
+  const isItalic = editor?.isActive("italic") ?? false;
+  const isHeading = editor?.isActive("heading", { level: 2 }) ?? false;
+  const isBulletList = editor?.isActive("bulletList") ?? false;
+  const isOrderedList = editor?.isActive("orderedList") ?? false;
+  const isBlockquote = editor?.isActive("blockquote") ?? false;
+  const isLink = editor?.isActive("link") ?? false;
+
+  const textGroup: Tool[] = editor
+    ? [
+        {
+          key: "bold",
+          icon: <Bold size={18} />,
+          label: "Negrito (Ctrl+B)",
+          active: isBold,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleBold().run(),
+        },
+        {
+          key: "italic",
+          icon: <Italic size={18} />,
+          label: "Italico (Ctrl+I)",
+          active: isItalic,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleItalic().run(),
+        },
+        {
+          key: "heading",
+          icon: <Heading2 size={18} />,
+          label: "Subtitulo",
+          active: isHeading,
+          persist: true,
+          onClick: () =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run(),
+        },
+      ]
+    : [];
+
+  const blockGroup: Tool[] = editor
+    ? [
+        {
+          key: "bullet",
+          icon: <List size={18} />,
+          label: "Lista",
+          active: isBulletList,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleBulletList().run(),
+        },
+        {
+          key: "ordered",
+          icon: <ListOrdered size={18} />,
+          label: "Lista numerada",
+          active: isOrderedList,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleOrderedList().run(),
+        },
+        {
+          key: "quote",
+          icon: <Quote size={18} />,
+          label: "Citacao",
+          active: isBlockquote,
+          persist: true,
+          onClick: () => editor.chain().focus().toggleBlockquote().run(),
+        },
+      ]
+    : [];
+
+  const mediaGroup: Tool[] = editor
+    ? [
+        {
+          key: "link",
+          icon: <LinkIcon size={18} />,
+          label: "Link",
+          active: isLink,
+          onClick: setLink,
+        },
+        {
+          key: "image",
+          icon: <ImagePlus size={18} />,
+          label: "Imagem",
+          onClick: addImage,
+        },
+        {
+          key: "imageData",
+          icon: <Columns2 size={18} />,
+          label: "Imagem + dados",
+          active: isAddingImageData,
+          onClick: () => {
+            insertPosRef.current = editor.state.selection.from;
+            setPanelTop(anchor ? anchor.top + 14 : 0);
+            if (isAddingImageData) {
+              resetForm();
+              setIsAddingImageData(false);
+            } else {
+              resetForm();
+              setIsAddingImageData(true);
+            }
+          },
+        },
+        {
+          key: "youtube",
+          icon: <PlaySquare size={18} />,
+          label: "Video",
+          onClick: addYoutube,
+        },
+      ]
+    : [];
+
+  const toolGroups = [textGroup, blockGroup, mediaGroup];
+
+  function runTool(tool: Tool) {
+    tool.onClick();
+    if (!tool.persist) {
+      setMenuOpen(false);
+    }
+  }
+
+  return (
+    <div ref={rootRef}>
+      <div className="relative">
+        <EditorContent
+          editor={editor}
+          className="post-content editor-content"
+        />
+
+        {isAddingImageData && editor ? (
+          <div
+            className="absolute inset-x-0 z-40 max-h-[min(70vh,30rem)] space-y-4 overflow-y-auto rounded-lg border border-white/10 bg-[#0b1328]/95 p-4 shadow-2xl shadow-black/60 backdrop-blur-md"
+            style={{ top: panelTop }}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input
+                value={imageDataUrl}
+                onChange={(event) => setImageDataUrl(event.target.value)}
+                className={smallInputClass}
+                placeholder="URL da imagem"
+                aria-label="URL da imagem do bloco"
+              />
+              <input
+                value={imageDataTitle}
+                onChange={(event) => setImageDataTitle(event.target.value)}
+                className={smallInputClass}
+                placeholder="Título dos dados"
+                aria-label="Título dos dados"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">
+                  Campos da coluna direita
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDataFields((current) => [
+                      ...current,
+                      { label: "", value: "" },
+                    ])
+                  }
+                  className="inline-flex items-center gap-1 rounded-md border border-sky-300/30 px-2 py-1 text-xs font-bold text-sky-200 transition hover:bg-sky-400 hover:text-slate-950"
+                >
+                  <Plus size={14} aria-hidden="true" />
+                  Adicionar campo
+                </button>
+              </div>
+              {dataFields.map((field, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    value={field.label}
+                    onChange={(event) =>
+                      updateDataField(index, "label", event.target.value)
+                    }
+                    className={smallInputClass}
+                    placeholder="Nome (ex.: Estúdio)"
+                    aria-label={`Nome do campo ${index + 1}`}
+                  />
+                  <input
+                    value={field.value}
+                    onChange={(event) =>
+                      updateDataField(index, "value", event.target.value)
+                    }
+                    className={smallInputClass}
+                    placeholder="Valor (ex.: MAPPA)"
+                    aria-label={`Valor do campo ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDataFields((current) =>
+                        current.filter((_, fieldIndex) => fieldIndex !== index),
+                      )
+                    }
+                    className="grid size-10 shrink-0 place-items-center rounded-md border border-red-300/20 text-red-200 transition hover:bg-red-400 hover:text-slate-950"
+                    aria-label={`Remover campo ${index + 1}`}
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">
+                  Links (nome + url)
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDataLinks((current) => [
+                      ...current,
+                      { label: "", url: "" },
+                    ])
+                  }
+                  className="inline-flex items-center gap-1 rounded-md border border-sky-300/30 px-2 py-1 text-xs font-bold text-sky-200 transition hover:bg-sky-400 hover:text-slate-950"
+                >
+                  <Plus size={14} aria-hidden="true" />
+                  Adicionar link
+                </button>
+              </div>
+              {dataLinks.map((link, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    value={link.label}
+                    onChange={(event) =>
+                      updateDataLink(index, "label", event.target.value)
+                    }
+                    className={smallInputClass}
+                    placeholder="Nome (ex.: MAL)"
+                    aria-label={`Nome do link ${index + 1}`}
+                  />
+                  <input
+                    value={link.url}
+                    onChange={(event) =>
+                      updateDataLink(index, "url", event.target.value)
+                    }
+                    className={smallInputClass}
+                    placeholder="URL (ex.: https://myanimelist.net/anime/1)"
+                    aria-label={`URL do link ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDataLinks((current) =>
+                        current.filter((_, linkIndex) => linkIndex !== index),
+                      )
+                    }
+                    className="grid size-10 shrink-0 place-items-center rounded-md border border-red-300/20 text-red-200 transition hover:bg-red-400 hover:text-slate-950"
+                    aria-label={`Remover link ${index + 1}`}
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <input
+              value={imageDataHref}
+              onChange={(event) => setImageDataHref(event.target.value)}
+              className={smallInputClass}
+              placeholder="Link opcional de referência"
+              aria-label="Link opcional de referência"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setIsAddingImageData(false);
+                }}
+                className="rounded-md px-3 py-2 text-sm font-bold text-slate-300 hover:text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={insertImageDataBlock}
+                disabled={!imageDataUrl.trim() || !imageDataTitle.trim()}
+                className="rounded-md bg-sky-400 px-3 py-2 text-sm font-black text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {editingTarget ? "Atualizar bloco" : "Inserir bloco"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {!isAddingImageData && anchor && editor ? (
+          <div
+            ref={floatingRef}
+            className="pointer-events-none absolute inset-x-0 z-30 transition-[top] duration-150 ease-out"
+            style={{ top: anchor.top }}
+          >
+            <div className="relative flex w-fit -translate-y-1/2 items-center">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-label={
+                  menuOpen ? "Fechar ferramentas" : "Abrir ferramentas"
+                }
+                aria-expanded={menuOpen}
+                title="Ferramentas de formatacao"
+                className="toolbar-pop pointer-events-auto grid size-8 shrink-0 -ml-8 place-items-center rounded-full border border-white hover:border-[#f2f2f2] text-white hover:text-[#f2f2f2] transition "
+              >
+                <Plus
+                  size={20}
+                  aria-hidden="true"
+                  className={`transition-transform duration-200 ${
+                    menuOpen ? "rotate-45" : ""
+                  }`}
+                />
+              </button>
+
+              {menuOpen ? (
+                <div className="toolbar-pop-right pointer-events-auto ml-2 flex max-w-[min(26rem,calc(100vw-6rem))] flex-wrap items-center gap-0.5 ">
+                  {toolGroups.map((group, groupIndex) => (
+                    <Fragment key={groupIndex}>
+                      {groupIndex > 0 ? (
+                        <span className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
+                      ) : null}
+                      {group.map((tool) => (
+                        <button
+                          key={tool.key}
+                          type="button"
+                          title={tool.label}
+                          aria-pressed={tool.active ?? false}
+                          className={`${buttonClass} ${
+                            tool.active ? activeButtonClass : ""
+                          }`}
+                          onClick={() => runTool(tool)}
+                        >
+                          {tool.icon}
+                        </button>
+                      ))}
+                    </Fragment>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}

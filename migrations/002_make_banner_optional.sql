@@ -1,0 +1,2 @@
+ALTER TABLE posts
+ALTER COLUMN banner_image_url DROP NOT NULL;

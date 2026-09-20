@@ -1,0 +1,18 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    container_name: intoxi-anime-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: intoxi_anime
+      POSTGRES_USER: intoxi
+      POSTGRES_PASSWORD: intoxi_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - intoxi-anime-db:/var/lib/postgresql/data
+
+volumes:
+  intoxi-anime-db:
