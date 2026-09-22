@@ -1,3 +1,29 @@
+export const SEARCH_PAGE_SIZE = 20;
+
+export const SEARCH_DATE_FILTERS = [
+  { value: "all", label: "Todos" },
+  { value: "24h", label: "Ultimas 24 horas" },
+  { value: "week", label: "Ultima semana" },
+  { value: "month", label: "Ultimo mes" },
+  { value: "year", label: "Esse ano" },
+] as const;
+
+export const SEARCH_SORT_OPTIONS = [
+  { value: "newest", label: "Novos para os ultimos" },
+  { value: "oldest", label: "Ultimos para os novos" },
+] as const;
+
+export type SearchDateFilter = (typeof SEARCH_DATE_FILTERS)[number]["value"];
+export type SearchSortOption = (typeof SEARCH_SORT_OPTIONS)[number]["value"];
+
+export function isSearchDateFilter(value: string): value is SearchDateFilter {
+  return SEARCH_DATE_FILTERS.some((option) => option.value === value);
+}
+
+export function isSearchSortOption(value: string): value is SearchSortOption {
+  return SEARCH_SORT_OPTIONS.some((option) => option.value === value);
+}
+
 export type Author = {
   name: string;
   avatarUrl: string | null;

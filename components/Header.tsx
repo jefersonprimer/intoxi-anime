@@ -17,7 +17,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-[#1E1E1E]">
-      <div className="flex w-full items-center justify-between gap-3 px-8 py-2">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2">
         <div className="flex items-center gap-3 md:gap-4">
           <HeaderMenu years={guideYears} guides={seasonGuides} />
           <Link href="/" className="group flex items-center gap-3">

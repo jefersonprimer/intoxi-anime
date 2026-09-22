@@ -1,12 +1,6 @@
-import { PostCard } from "@/components/PostCard";
-import { getPosts } from "@/lib/posts";
-
-function normalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
+import { HomePostSidebar } from "@/components/HomePostSidebar";
+import { SearchResults } from "@/components/SearchResults";
+import { getPostCategories, getPosts } from "@/lib/posts";
 
 export const metadata = {
   title: "Buscar posts - Intoxi Anime",
@@ -17,42 +11,29 @@ export default async function SearchPage({
 }: PageProps<"/buscar">) {
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim() : "";
-  const normalizedQuery = normalize(query);
+  const category =
+    typeof params.categoria === "string" ? params.categoria.trim() : "";
+  const date = typeof params.data === "string" ? params.data : undefined;
+  const sort = typeof params.ordem === "string" ? params.ordem : undefined;
+  const categories = await getPostCategories();
   const posts = await getPosts();
-  const results = normalizedQuery
-    ? posts.filter((post) =>
-        normalize(
-          [post.title, post.category, post.summary ?? "", post.contentHtml].join(" "),
-        ).includes(normalizedQuery),
-      )
-    : posts;
 
   return (
     <div className="min-h-screen bg-[#1E1E1E]">
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="mb-8">
-          <p className="text-sm font-black uppercase tracking-[0.26em] text-sky-300">
-            busca
-          </p>
-          <h1 className="mt-2 text-4xl font-black text-white">
-            {query ? `Resultados para "${query}"` : "Buscar posts"}
+      <main className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-3 xl:px-0">
+        <section className="min-w-0 lg:col-span-2">
+          <h1 className="mt-2 text-2xl font-normal text-white">
+            {query ? `Resultados para: "${query}"` : "Buscar posts"}
           </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            {results.length} {results.length === 1 ? "post encontrado" : "posts encontrados"}
-          </p>
+          <SearchResults
+            query={query}
+            categories={categories}
+            initialCategory={category}
+            initialDate={date}
+            initialSort={sort}
+          />
         </section>
-
-        {results.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border border-white/10 bg-white/[0.035] p-8 text-slate-300">
-            Nenhum post encontrado com esse termo.
-          </div>
-        )}
+        <HomePostSidebar posts={posts.slice(0, 4)} title="Últimas notícias" />
       </main>
     </div>
   );

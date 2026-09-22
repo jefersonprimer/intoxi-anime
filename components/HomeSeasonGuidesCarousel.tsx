@@ -23,7 +23,7 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
   }
 
   return (
-    <section className="mt-8 sm:px-6 lg:px-8">
+    <section className="mt-8">
       <div className="mb-4">
         <h2 className="mt-2 text-2xl font-black text-white">
           Guias de Temporada

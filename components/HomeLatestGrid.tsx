@@ -16,7 +16,7 @@ export function HomeLatestGrid({ posts }: HomeLatestGridProps) {
   const sidePosts = posts.slice(1, 5);
 
   return (
-    <section className="mt-8 sm:px-6 lg:px-8">
+    <section className="mt-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Post principal à esquerda (maior) */}
         <div className="lg:col-span-6">

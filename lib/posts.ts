@@ -1,6 +1,12 @@
 import { getClient } from "@/lib/db";
 import { calculateReadingTime } from "@/lib/reading-time";
-import { categoryToSlug, type Post } from "@/lib/post-utils";
+import {
+  SEARCH_PAGE_SIZE,
+  categoryToSlug,
+  type Post,
+  type SearchDateFilter,
+  type SearchSortOption,
+} from "@/lib/post-utils";
 
 
 type SqlClient = ReturnType<typeof getClient>;
@@ -134,6 +140,104 @@ export async function getPosts() {
   } catch {
     return demoPosts;
   }
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function toSearchResult(post: Post): Post {
+  return { ...post, contentHtml: "" };
+}
+
+function getDateFilterCutoff(
+  dateFilter: SearchDateFilter,
+  now = new Date(),
+): Date | null {
+  switch (dateFilter) {
+    case "24h":
+      return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    case "week":
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    case "month":
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    case "year":
+      return new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    case "all":
+    default:
+      return null;
+  }
+}
+
+export async function getPostCategories() {
+  const posts = await getPosts();
+  const categories = new Set(posts.map((post) => post.category.trim()).filter(Boolean));
+  return [...categories].sort((a, b) =>
+    a.localeCompare(b, "pt-BR", { sensitivity: "base" }),
+  );
+}
+
+export async function searchPosts(options: {
+  query?: string;
+  category?: string;
+  date?: SearchDateFilter;
+  sort?: SearchSortOption;
+  offset?: number;
+  limit?: number;
+}) {
+  const query = options.query?.trim() ?? "";
+  const category = options.category?.trim() ?? "";
+  const dateFilter = options.date ?? "all";
+  const sort = options.sort ?? "newest";
+  const offset = Math.max(0, options.offset ?? 0);
+  const limit = Math.min(
+    50,
+    Math.max(1, options.limit ?? SEARCH_PAGE_SIZE),
+  );
+  const posts = await getPosts();
+  const normalizedQuery = normalizeSearchText(query);
+  const categorySlug = category ? categoryToSlug(category) : "";
+  const cutoff = getDateFilterCutoff(dateFilter);
+
+  const filtered = posts.filter((post) => {
+    if (normalizedQuery) {
+      const haystack = normalizeSearchText(
+        [post.title, post.category, post.summary ?? ""].join(" "),
+      );
+      if (!haystack.includes(normalizedQuery)) {
+        return false;
+      }
+    }
+
+    if (categorySlug && categoryToSlug(post.category) !== categorySlug) {
+      return false;
+    }
+
+    if (cutoff && new Date(post.createdAt) < cutoff) {
+      return false;
+    }
+
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const delta =
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return sort === "oldest" ? delta : -delta;
+  });
+
+  const page = filtered.slice(offset, offset + limit).map(toSearchResult);
+
+  return {
+    posts: page,
+    total: filtered.length,
+    offset,
+    limit,
+    hasMore: offset + page.length < filtered.length,
+  };
 }
 
 export async function getPostBySlug(slug: string) {

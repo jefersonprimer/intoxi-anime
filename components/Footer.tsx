@@ -5,8 +5,8 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className=" bg-[#1E1E1E] text-slate-300 px-4 sm:px-8">
-      <div className="mx-auto w-full py-10">
+    <footer className=" bg-[#1E1E1E] text-slate-300 px-">
+      <div className="mx-auto w-full max-w-7xl py-10">
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           {/* Logo & Description */}
           <div className="flex flex-col gap-3">

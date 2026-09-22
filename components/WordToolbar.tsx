@@ -38,7 +38,14 @@ export function WordToolbar({
     >
       <div
         className="toolbar-pop pointer-events-auto flex items-center gap-1 rounded-full bg-[#262625] p-1.5 shadow-xl shadow-black/60"
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          const target = event.target as HTMLElement;
+          // Allow focus/paste in form fields (e.g. custom hex color).
+          if (target.closest("input, textarea, select")) {
+            return;
+          }
+          event.preventDefault();
+        }}
       >
         {tools.map((tool) => (
           <button

@@ -23,8 +23,8 @@ button {
 }
 
 ::selection {
-  background: #38bdf8;
-  color: #020617;
+  background: #1e73be;
+  color: #ffffff;
 }
 
 .editor-content p.is-editor-empty:first-child::before {
@@ -164,4 +164,526 @@ button {
 .post-content iframe {
   aspect-ratio: 16 / 9;
   height: auto;
+}
+
+/* ---------- Tabelas (editor + post publicado) ---------- */
+
+/*
+  Controles (+/- linhas/colunas) ficam nos gutters fora da tabela,
+  nao sobrepostos as celulas — mesmo padrao das colunas do editor.
+*/
+.tiptap-table-wrapper {
+  position: relative;
+  margin: 0.75rem 0 1rem;
+  padding: 2rem 2.25rem 2.25rem 0;
+  overflow: visible;
+  clear: both;
+  box-sizing: border-box;
+}
+
+.tiptap-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.editor-content .tiptap-table-wrapper table,
+.editor-content table.tiptap-table,
+.post-content table {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0 !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  margin: 0;
+  font-size: 0.82em;
+  line-height: 1.45;
+  color: #dbeafe;
+}
+
+.editor-content table.tiptap-table td,
+.editor-content table.tiptap-table th,
+.post-content table td,
+.post-content table th {
+  border: 1px solid var(--accent, rgba(255, 255, 255, 0.16));
+  padding: 0.6rem 0.75rem;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.editor-content table.tiptap-table th,
+.post-content table th {
+  background: var(--th-bg, #1e73be);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+/* Cabeçalho sem cor: texto acompanha o corpo da tabela */
+.editor-content table.tiptap-table[style*="--th-bg: transparent"] th,
+.post-content table[style*="--th-bg: transparent"] th {
+  color: #dbeafe;
+  font-weight: 800;
+}
+
+.editor-content table.tiptap-table td,
+.post-content table td {
+  background-color: inherit;
+}
+
+.post-content table p:empty {
+  min-height: 1.4em;
+}
+
+/* Controles da tabela dentro do editor */
+
+.tiptap-table-wrapper .tbl-owner-top,
+.tiptap-table-wrapper .tbl-owner-side,
+.tiptap-table-wrapper .tbl-owner-bottom {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+
+.tiptap-table-wrapper:hover .tbl-owner-top,
+.tiptap-table-wrapper:hover .tbl-owner-side,
+.tiptap-table-wrapper:hover .tbl-owner-bottom {
+  opacity: 1;
+}
+
+.tiptap-table-wrapper .tbl-owner-top {
+  top: 0.15rem;
+  right: 2.25rem;
+  position: absolute;
+}
+
+.tiptap-table-wrapper .tbl-owner-side {
+  top: calc(2rem + (100% - 4.25rem) / 2);
+  right: 0.15rem;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+
+.tiptap-table-wrapper .tbl-owner-bottom {
+  bottom: 0.25rem;
+  left: calc((100% - 2.25rem) / 2);
+  transform: translateX(-50%);
+}
+
+.tbl-btn {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #262625;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.12s ease,
+    color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.tbl-btn:hover:not(:disabled) {
+  transform: scale(1.12);
+  color: #7dd3fc;
+}
+
+.tbl-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.tbl-btn.is-active {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.tbl-count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Menu de cores da tabela */
+
+.tbl-color-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: none;
+  width: 176px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #262625;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+.tbl-color-menu.is-open {
+  display: block;
+  animation: toolbar-pop 0.15s ease-out;
+}
+
+.tbl-color-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+
+.tbl-color-targets {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tbl-color-targets .tbl-btn {
+  width: auto;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tbl-color-swatches,
+.tbl-color-bg {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tbl-color-swatches:last-child,
+.tbl-color-bg:last-child {
+  margin-bottom: 0;
+}
+
+.tbl-color-swatches {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tbl-color-swatch {
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.12s ease;
+}
+
+.tbl-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.tbl-color-none {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px dashed rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.12s ease;
+}
+
+.tbl-color-none:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ---------- Colunas (editor + post publicado) ---------- */
+
+/* Post publicado (sem node-view): filhos diretos lado a lado */
+.post-content [data-columns]:not(.columns-node) {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+}
+
+.post-content [data-column]:not(.column-node) {
+  flex: 1 1 0;
+  min-width: 0;
+  background-color: var(--col-bg, transparent);
+  border-radius: 4px;
+}
+
+.post-content
+  [data-column]:not(.column-node)
+  + [data-column]:not(.column-node) {
+  border-left: 1px solid var(--col-border, rgba(255, 255, 255, 0.18));
+  padding-left: 0;
+}
+
+/*
+  Editor: grid com N fatias iguais (2 cols = 50/50 do width total).
+  Controles +/- ficam absolutos e NAO roubam largura das colunas.
+*/
+.editor-content .columns-node[data-columns] {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0.75rem 0;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+.editor-content .columns-node > .cols-content {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* O container real das .column-node — grid 1fr x N (2 cols = 50% + 50%) */
+.editor-content .columns-node > .cols-content > [data-node-view-content-react],
+.editor-content
+  .columns-node
+  [data-node-view-content-react]:has(> .column-node) {
+  display: grid !important;
+  grid-template-columns: repeat(var(--col-count, 2), minmax(0, 1fr));
+  gap: 0;
+  width: 100% !important;
+  max-width: 100%;
+  min-height: 5.5rem;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.editor-content .column-node[data-column] {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  overflow: visible;
+  cursor: text;
+}
+
+/* Cor / lixeira fora do traco, acima da coluna */
+.editor-content .column-chrome {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 28px;
+  flex: 0 0 auto;
+  z-index: 40;
+}
+
+.editor-content .column-tools {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.editor-content .column-node:hover .column-tools,
+.editor-content .column-node:focus-within .column-tools,
+.editor-content .column-node.is-tools-open .column-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-content .column-color-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: 160px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #262625;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  animation: toolbar-pop 0.15s ease-out;
+}
+
+.editor-content .column-color-swatch {
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.12s ease;
+}
+
+.editor-content .column-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.editor-content .column-color-none {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px dashed rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.12s ease;
+}
+
+.editor-content .column-color-none:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Caixa tracejada = so o conteudo */
+.editor-content .column-frame {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--col-bg, rgba(255, 255, 255, 0.03));
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.editor-content .column-node:hover .column-frame,
+.editor-content .column-node:focus-within .column-frame {
+  border-color: rgba(56, 189, 248, 0.55);
+  background-color: var(--col-bg, rgba(56, 189, 248, 0.06));
+}
+
+.editor-content .column-node .col-content {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.editor-content .column-node .col-content > [data-node-view-content-react] {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.editor-content .column-node .col-content > [data-node-view-content-react] > * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-content
+  .column-node
+  .col-content
+  > [data-node-view-content-react]
+  > :only-child {
+  flex: 1 1 auto;
+  min-height: 4rem;
+  width: 100%;
+}
+
+.editor-content .column-node .col-content p {
+  min-height: 1.4em;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.editor-content .column-node .col-content p.is-empty::before,
+.editor-content .column-node .col-content p.is-editor-empty::before {
+  color: rgba(179, 179, 177, 0.7);
+  content: "Escreva aqui…";
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+.editor-content .columns-controls {
+  position: absolute;
+  top: 8px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 28px;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.editor-content .columns-controls--left {
+  left: 0;
+}
+
+.editor-content .columns-controls--right {
+  right: 0;
+}
+
+.editor-content .columns-controls .columns-count {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1;
+}
+
+.editor-content .columns-node:hover .columns-controls,
+.editor-content .columns-node.is-focused .columns-controls {
+  opacity: 1;
+}
+
+@media (max-width: 520px) {
+  .post-content [data-columns]:not(.columns-node) {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .post-content
+    [data-column]:not(.column-node)
+    + [data-column]:not(.column-node) {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--col-border, rgba(255, 255, 255, 0.18));
+    padding-top: 0.9rem;
+  }
+
+  .editor-content .columns-node[data-columns] {
+    padding: 0 1.75rem;
+  }
+
+  .editor-content
+    .columns-node
+    > .cols-content
+    > [data-node-view-content-react] {
+    grid-template-columns: 1fr !important;
+  }
 }

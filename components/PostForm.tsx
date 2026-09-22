@@ -1,8 +1,19 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { RichTextEditor } from "@/components/RichTextEditor";
+
+const RichTextEditor = dynamic(
+  () =>
+    import("@/components/RichTextEditor").then((module) => module.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-72 rounded-md border border-white/10 bg-white/[0.04] px-4 py-4" />
+    ),
+  },
+);
 import { extractFirstImageUrl, getPostPath, type Post } from "@/lib/post-utils";
 
 const inputClass =
@@ -35,6 +46,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const summaryRef = useRef<HTMLTextAreaElement>(null);
   const isEditing = mode === "edit";
   const [step, setStep] = useState<"edit" | "confirm">("edit");
   const [title, setTitle] = useState(initialPost?.title ?? "");
@@ -64,8 +76,8 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       );
   }, []);
 
-  const effectiveBanner =
-    bannerImageUrl.trim() || extractFirstImageUrl(contentHtml);
+  const contentBanner = extractFirstImageUrl(contentHtml);
+  const effectiveBanner = bannerImageUrl.trim() || contentBanner;
 
   function hasContent(): boolean {
     return contentHtml.replace(/<[^>]*>/g, "").trim().length > 0;
@@ -81,6 +93,13 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
   useEffect(() => {
     resizeTitle();
   }, [step]);
+
+  function resizeSummary() {
+    const el = summaryRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.max(el.scrollHeight, 96)}px`;
+  }
 
   async function publishPost() {
     setMessage("");
@@ -124,6 +143,9 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       }
 
       setMessage("");
+      if (!bannerImageUrl.trim() && contentBanner) {
+        setBannerImageUrl(contentBanner);
+      }
       setStep("confirm");
       return;
     }
@@ -168,19 +190,9 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
             </h2>
             <p className="mt-1 text-sm text-slate-400">
               {isEditing
-                ? "Confira as informacoes antes de salvar."
-                : "Confira as informacoes antes de publicar."}
+                ? "Preencha os dados finais antes de salvar."
+                : "Preencha os dados finais antes de publicar."}
             </p>
-          </div>
-
-          <div className="rounded-md border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-xl font-black text-white">
-              {title || "Sem titulo"}
-            </p>
-            <div
-              className="post-content pointer-events-none mt-3 max-h-56 overflow-y-auto text-sm"
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
-            />
           </div>
 
           <label className="flex flex-col gap-2">
@@ -195,55 +207,54 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
           </label>
 
           {effectiveBanner ? (
-            <div>
-              <img
-                src={effectiveBanner}
-                alt="Preview do banner"
-                className="max-h-48 w-full rounded-md border border-white/10 object-cover"
-              />
-              {!bannerImageUrl.trim() ? (
-                <p className="mt-1 text-xs font-semibold text-sky-300">
-                  Nenhum banner definido: sera usada a primeira imagem do
-                  conteudo.
-                </p>
-              ) : null}
-            </div>
+            <img
+              src={effectiveBanner}
+              alt="Preview do banner"
+              className="w-full rounded-md border border-white/10 object-contain"
+            />
           ) : (
             <p className="text-xs font-semibold text-slate-400">
-              Nenhuma imagem encontrada: voce pode informar a URL do banner
-              acima ou adicionar uma imagem no conteudo.
+              Nenhuma imagem encontrada no conteudo. Informe uma URL de banner
+              acima.
             </p>
           )}
 
-          <label className="flex flex-col gap-2">
-            <span className={labelClass}>Categoria</span>
-            <input
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              className={inputClass}
-            />
-          </label>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="flex flex-col gap-2">
+              <span className={labelClass}>Categoria</span>
+              <input
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                className={inputClass}
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 sm:mt-7">
+              <input
+                type="checkbox"
+                checked={isFeatured}
+                onChange={(event) => setIsFeatured(event.target.checked)}
+                className="h-4 w-4 accent-sky-400"
+              />
+              <span className="text-sm font-bold text-slate-200">
+                Post em destaque
+              </span>
+            </label>
+          </div>
 
           <label className="flex flex-col gap-2">
             <span className={labelClass}>Resumo</span>
-            <input
+            <textarea
+              ref={summaryRef}
               value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-              className={inputClass}
+              onChange={(event) => {
+                setSummary(event.target.value);
+                resizeSummary();
+              }}
+              className={`${inputClass} h-auto min-h-[96px] resize-none overflow-hidden py-3 leading-relaxed`}
+              rows={3}
               placeholder="Pequeno resumo para cards e destaque"
             />
-          </label>
-
-          <label className="flex cursor-pointer items-center gap-3 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3">
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(event) => setIsFeatured(event.target.checked)}
-              className="h-4 w-4 accent-sky-400"
-            />
-            <span className="text-sm font-bold text-slate-200">
-              Post em destaque (prioridade na home)
-            </span>
           </label>
 
           <div className="flex flex-wrap items-center justify-end gap-3">

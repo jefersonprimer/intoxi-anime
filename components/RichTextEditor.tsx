@@ -17,12 +17,14 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Youtube from "@tiptap/extension-youtube";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import {
   AlignCenter,
   AlignJustify,
   AlignLeft,
   AlignRight,
   Bold,
+  Columns3,
   Heading2,
   ImagePlus,
   Italic,
@@ -32,6 +34,7 @@ import {
   PlaySquare,
   Plus,
   Quote,
+  Table2,
 } from "lucide-react";
 import {
   Fragment,
@@ -42,6 +45,8 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { ColumnExtension, ColumnsExtension } from "./editor/columns";
+import { EditableTable, TableCellBackground } from "./editor/table";
 
 const buttonClass =
   "grid size-9 place-items-center rounded-full border border-[#1e73be] text-[#1e73be] transition hover:border-sky-300/50 hover:bg-sky-400 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40";
@@ -296,24 +301,31 @@ function mediaPresetWidth(size: string | null | undefined): number {
   return 100;
 }
 
+type MediaCorner = "tl" | "tr" | "bl" | "br";
+
 function ResizeMediaHandle({
   editor,
   align,
   imgLeft,
   imgRight,
+  top,
   bottom,
 }: {
   editor: TiptapEditor;
   align: string;
   imgLeft: number;
   imgRight: number;
+  top: number;
   bottom: number;
 }) {
   const dragRef = useRef<{
     pointerId: number;
-    startX: number;
+    side: "left" | "right";
     startWidth: number;
     containerWidth: number;
+    viewLeft: number;
+    containerLeft: number;
+    containerRight: number;
     imgLeft: number;
     imgRight: number;
   } | null>(null);
@@ -326,28 +338,58 @@ function ResizeMediaHandle({
     return mediaPresetWidth(node.attrs.size as string | null | undefined);
   }
 
-  function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    event.stopPropagation();
+  function getDragState(): {
+    startWidth: number;
+    containerWidth: number;
+    viewLeft: number;
+    containerLeft: number;
+    containerRight: number;
+    imgLeft: number;
+    imgRight: number;
+  } | null {
     const selection = editor.state.selection;
     if (!isNodeSelection(selection)) {
-      return;
+      return null;
     }
     const dom = editor.view.nodeDOM(selection.from);
     if (!(dom instanceof HTMLElement)) {
-      return;
+      return null;
     }
     const domRect = dom.getBoundingClientRect();
-    const container =
-      dom.parentElement?.getBoundingClientRect().width ??
-      editor.view.dom.clientWidth;
+    const parentRect = dom.parentElement?.getBoundingClientRect();
+    const viewRect = editor.view.dom.getBoundingClientRect();
+    const viewLeft = viewRect.left;
+    const containerWidth = Math.max(
+      1,
+      parentRect?.width ?? editor.view.dom.clientWidth,
+    );
+    const containerLeft = (parentRect?.left ?? viewRect.left) - viewLeft;
+    const containerRight = (parentRect?.right ?? viewRect.right) - viewLeft;
+    return {
+      startWidth: currentWidthPct(selection.node),
+      containerWidth,
+      viewLeft,
+      containerLeft,
+      containerRight,
+      imgLeft: domRect.left - viewLeft,
+      imgRight: domRect.right - viewLeft,
+    };
+  }
+
+  function handlePointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    side: "left" | "right",
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    const state = getDragState();
+    if (!state) {
+      return;
+    }
     dragRef.current = {
       pointerId: event.pointerId,
-      startX: event.clientX,
-      startWidth: currentWidthPct(selection.node),
-      containerWidth: Math.max(1, container),
-      imgLeft: domRect.left,
-      imgRight: domRect.right,
+      side,
+      ...state,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
@@ -364,18 +406,24 @@ function ResizeMediaHandle({
       return;
     }
     event.preventDefault();
+    const pointerX = event.clientX - drag.viewLeft;
     let next: number;
-    if (align === "right") {
+    if (align === "center") {
+      next =
+        drag.side === "right"
+          ? clampWidth(
+              ((pointerX - drag.imgLeft) / drag.containerWidth) * 100,
+            )
+          : clampWidth(
+              ((drag.imgRight - pointerX) / drag.containerWidth) * 100,
+            );
+    } else if (align === "left") {
       next = clampWidth(
-        ((drag.imgRight - event.clientX) / drag.containerWidth) * 100,
+        ((pointerX - drag.containerLeft) / drag.containerWidth) * 100,
       );
-    } else if (align === "center") {
-      const deltaPct =
-        ((event.clientX - drag.startX) / drag.containerWidth) * 100;
-      next = clampWidth(drag.startWidth + deltaPct * 2);
     } else {
       next = clampWidth(
-        ((event.clientX - drag.imgLeft) / drag.containerWidth) * 100,
+        ((drag.containerRight - pointerX) / drag.containerWidth) * 100,
       );
     }
     if (next !== drag.startWidth) {
@@ -395,22 +443,39 @@ function ResizeMediaHandle({
     }
   }
 
+  const corners: {
+    corner: MediaCorner;
+    side: "left" | "right";
+    left: number;
+    anchorTop: number;
+  }[] = [
+    { corner: "tl", side: "left", left: imgLeft, anchorTop: top },
+    { corner: "tr", side: "right", left: imgRight, anchorTop: top },
+    { corner: "bl", side: "left", left: imgLeft, anchorTop: bottom },
+    { corner: "br", side: "right", left: imgRight, anchorTop: bottom },
+  ];
+
   return (
-    <button
-      type="button"
-      aria-label="Redimensionar imagem"
-      title="Arraste para redimensionar a imagem"
-      className="resize-handle"
-      style={
-        align === "right"
-          ? { left: imgLeft, top: bottom }
-          : { left: imgRight, top: bottom }
-      }
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-    />
+    <>
+      {corners.map(({ corner, side, left, anchorTop }) => {
+        const isDiag =
+          corner === "tl" || corner === "br" ? "nwse-resize" : "nesw-resize";
+        return (
+          <button
+            key={corner}
+            type="button"
+            aria-label="Redimensionar imagem"
+            title="Arraste para redimensionar a imagem"
+            className="resize-handle"
+            style={{ left, top: anchorTop, cursor: isDiag }}
+            onPointerDown={(event) => handlePointerDown(event, side)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+          />
+        );
+      })}
+    </>
   );
 }
 
@@ -440,8 +505,12 @@ export function RichTextEditor({
     bottom: number;
   } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [layoutSubmenu, setLayoutSubmenu] = useState<
+    "columns" | "table" | null
+  >(null);
   const floatingRef = useRef<HTMLDivElement>(null);
   const colorRef = useRef<HTMLDivElement>(null);
+  const colorMenuOpenRef = useRef(false);
   const frameRef = useRef(0);
   const lastAnchorRef = useRef<{ top: number; left: number } | null>(null);
   const lastSelectionRef = useRef<{ top: number; left: number } | null>(null);
@@ -454,6 +523,8 @@ export function RichTextEditor({
   } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  colorMenuOpenRef.current = colorMenuOpen;
+
   const editor = useEditor({
     immediatelyRender: false,
     autofocus,
@@ -464,6 +535,7 @@ export function RichTextEditor({
       TextColorMark,
       Placeholder.configure({
         placeholder: "Conteudo",
+        includeChildren: true,
       }),
       Link.configure({
         openOnClick: false,
@@ -477,6 +549,13 @@ export function RichTextEditor({
         controls: true,
         nocookie: true,
       }),
+      TableCellBackground,
+      TableCell,
+      TableHeader,
+      TableRow,
+      EditableTable,
+      ColumnsExtension,
+      ColumnExtension,
     ],
     content: value,
     editorProps: {
@@ -498,6 +577,13 @@ export function RichTextEditor({
     }
 
     if (!editor.view.hasFocus()) {
+      // Keep the selection toolbar while the hex color input is focused.
+      if (
+        colorMenuOpenRef.current &&
+        colorRef.current?.contains(document.activeElement)
+      ) {
+        return;
+      }
       if (
         lastAnchorRef.current !== null ||
         lastSelectionRef.current !== null ||
@@ -653,13 +739,21 @@ export function RichTextEditor({
       });
     };
 
-    const closeColorMenu = () => setColorMenuOpen(false);
+    const handleBlur = () => {
+      schedule();
+      // Defer so we can see if focus moved into the color picker input.
+      requestAnimationFrame(() => {
+        if (colorRef.current?.contains(document.activeElement)) {
+          return;
+        }
+        setColorMenuOpen(false);
+      });
+    };
 
     editor.on("transaction", schedule);
     editor.on("selectionUpdate", schedule);
     editor.on("focus", schedule);
-    editor.on("blur", schedule);
-    editor.on("blur", closeColorMenu);
+    editor.on("blur", handleBlur);
     updateAnchor();
 
     return () => {
@@ -667,10 +761,15 @@ export function RichTextEditor({
       editor.off("transaction", schedule);
       editor.off("selectionUpdate", schedule);
       editor.off("focus", schedule);
-      editor.off("blur", schedule);
-      editor.off("blur", closeColorMenu);
+      editor.off("blur", handleBlur);
     };
   }, [editor, updateAnchor]);
+
+  useEffect(() => {
+    if (!colorMenuOpen) {
+      updateAnchor();
+    }
+  }, [colorMenuOpen, updateAnchor]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -683,6 +782,7 @@ export function RichTextEditor({
         !floatingRef.current.contains(event.target as Node)
       ) {
         setMenuOpen(false);
+        setLayoutSubmenu(null);
       }
     }
 
@@ -819,6 +919,35 @@ export function RichTextEditor({
       return;
     }
     editor?.chain().focus().updateAttributes(typeName, { textAlign: align }).run();
+  }
+
+  function insertColumns(count: number) {
+    if (!editor) {
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "columns",
+        content: Array.from({ length: count }, () => ({
+          type: "column",
+          content: [{ type: "paragraph" }],
+        })),
+      })
+      .run();
+    setLayoutSubmenu(null);
+    setMenuOpen(false);
+  }
+
+  function insertTable(count: number) {
+    editor
+      ?.chain()
+      .focus()
+      .insertTable({ rows: 3, cols: count, withHeaderRow: true })
+      .run();
+    setLayoutSubmenu(null);
+    setMenuOpen(false);
   }
 
   const isBold = editor?.isActive("bold") ?? false;
@@ -963,7 +1092,32 @@ export function RichTextEditor({
       ]
     : [];
 
-  const toolGroups = [textGroup, blockGroup, mediaGroup];
+  const layoutGroup: Tool[] = editor
+    ? [
+        {
+          key: "columns",
+          icon: <Columns3 size={18} />,
+          label: "Colunas (sem divisao de linhas)",
+          active: layoutSubmenu === "columns",
+          persist: true,
+          onClick: () =>
+            setLayoutSubmenu((submenu) =>
+              submenu === "columns" ? null : "columns",
+            ),
+        },
+        {
+          key: "table",
+          icon: <Table2 size={18} />,
+          label: "Tabela (com divisao de linhas)",
+          active: layoutSubmenu === "table",
+          persist: true,
+          onClick: () =>
+            setLayoutSubmenu((submenu) => (submenu === "table" ? null : "table")),
+        },
+      ]
+    : [];
+
+  const toolGroups = [textGroup, blockGroup, mediaGroup, layoutGroup];
 
   const wordTools: Tool[] = editor
     ? [
@@ -1122,7 +1276,15 @@ export function RichTextEditor({
               <button
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
-                onClick={() => setMenuOpen((open) => !open)}
+                onClick={() =>
+                  setMenuOpen((open) => {
+                    const next = !open;
+                    if (!next) {
+                      setLayoutSubmenu(null);
+                    }
+                    return next;
+                  })
+                }
                 aria-label={
                   menuOpen ? "Fechar ferramentas" : "Abrir ferramentas"
                 }
@@ -1149,22 +1311,84 @@ export function RichTextEditor({
                       {groupIndex > 0 ? (
                         <span className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
                       ) : null}
-                      {group.map((tool) => (
-                        <button
-                          key={tool.key}
-                          type="button"
-                          title={tool.label}
-                          aria-pressed={tool.active ?? false}
-                          className={`${buttonClass} ${
-                            tool.active ? activeButtonClass : ""
-                          }`}
-                          onClick={() => runTool(tool)}
-                        >
-                          {tool.icon}
-                        </button>
-                      ))}
+                      {group.length > 0
+                        ? group.map((tool) => (
+                            <button
+                              key={tool.key}
+                              type="button"
+                              title={tool.label}
+                              aria-pressed={tool.active ?? false}
+                              className={`${buttonClass} ${
+                                tool.active ? activeButtonClass : ""
+                              }`}
+                              onClick={() => runTool(tool)}
+                            >
+                              {tool.icon}
+                            </button>
+                          ))
+                        : null}
                     </Fragment>
                   ))}
+                </div>
+              ) : null}
+
+              {layoutSubmenu ? (
+                <div
+                  className="toolbar-pop pointer-events-auto absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-white/10 bg-[#262625] p-3 shadow-xl shadow-black/60"
+                  onMouseDown={(event) => event.preventDefault()}
+                >
+                  <p className="mb-2 text-[11px] font-black uppercase tracking-[0.15em] text-sky-300">
+                    {layoutSubmenu === "columns" ? "Colunas" : "Tabela"}
+                  </p>
+                  <p className="-mt-1 mb-2 text-[11px] text-slate-400">
+                    {layoutSubmenu === "columns"
+                      ? "Divide a largura do post lado a lado"
+                      : "Com divisao de linhas"}
+                  </p>
+                  <div
+                    className={
+                      layoutSubmenu === "columns"
+                        ? "grid grid-cols-3 gap-1.5"
+                        : "grid grid-cols-2 gap-1.5"
+                    }
+                  >
+                    {(layoutSubmenu === "columns"
+                      ? [1, 2, 3, 4, 5]
+                      : [2, 3, 4, 5]
+                    ).map((count) => (
+                      <button
+                        key={count}
+                        type="button"
+                        onClick={() =>
+                          layoutSubmenu === "columns"
+                            ? insertColumns(count)
+                            : insertTable(count)
+                        }
+                        className="flex h-14 flex-col items-stretch justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-white transition hover:border-sky-300/60 hover:bg-sky-400 hover:text-slate-950"
+                      >
+                        {layoutSubmenu === "columns" ? (
+                          <>
+                            <span
+                              aria-hidden="true"
+                              className="flex h-5 w-full gap-0.5"
+                            >
+                              {Array.from({ length: count }, (_, index) => (
+                                <span
+                                  key={index}
+                                  className="h-full flex-1 rounded-[3px] border border-current/35 bg-current/15"
+                                />
+                              ))}
+                            </span>
+                            <span className="text-center text-[11px] font-bold leading-none">
+                              {count}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold">{count} colunas</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -1212,7 +1436,13 @@ export function RichTextEditor({
                 {colorMenuOpen ? (
                   <div
                     className="toolbar-pop absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 rounded-2xl border border-white/10 bg-[#262625] p-2 shadow-xl shadow-black/60"
-                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseDown={(event) => {
+                      const target = event.target as HTMLElement;
+                      if (target.closest("input, textarea, select")) {
+                        return;
+                      }
+                      event.preventDefault();
+                    }}
                   >
                     <div className="grid w-44 grid-cols-5 gap-1.5">
                       <button
@@ -1303,6 +1533,7 @@ export function RichTextEditor({
             align={selectedMediaAlign}
             imgLeft={mediaAnchor.imgLeft}
             imgRight={mediaAnchor.imgRight}
+            top={mediaAnchor.top}
             bottom={mediaAnchor.bottom}
           />
         ) : null}
