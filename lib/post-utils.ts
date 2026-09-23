@@ -34,6 +34,7 @@ export type Post = {
   title: string;
   slug: string;
   category: string;
+  tags: string[];
   bannerImageUrl: string | null;
   summary: string | null;
   contentHtml: string;
@@ -43,6 +44,30 @@ export type Post = {
   updatedAt: string;
   author: Author | null;
 };
+
+export function normalizeTags(value: unknown): string[] {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(/[,;]/)
+      : [];
+
+  const seen = new Set<string>();
+  const tags: string[] = [];
+
+  for (const item of raw) {
+    const tag = String(item ?? "")
+      .trim()
+      .replace(/\s+/g, " ");
+    if (!tag) continue;
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tags.push(tag.slice(0, 40));
+  }
+
+  return tags.slice(0, 12);
+}
 
 export function extractFirstImageUrl(html: string): string {
   const match = /<img[^>]+src=["']([^"']+)["']/i.exec(html);

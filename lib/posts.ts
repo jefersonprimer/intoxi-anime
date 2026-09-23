@@ -3,6 +3,7 @@ import { calculateReadingTime } from "@/lib/reading-time";
 import {
   SEARCH_PAGE_SIZE,
   categoryToSlug,
+  normalizeTags,
   type Post,
   type SearchDateFilter,
   type SearchSortOption,
@@ -16,6 +17,7 @@ type DbPost = {
   title: string;
   slug: string;
   category: string;
+  tags: string[] | null;
   banner_image_url: string | null;
   summary: string | null;
   content_html: string;
@@ -34,6 +36,7 @@ function postSelect(sql: SqlClient) {
       p.title,
       p.slug,
       p.category,
+      p.tags,
       p.banner_image_url,
       p.summary,
       p.content_html,
@@ -55,6 +58,7 @@ const demoPosts: Post[] = [
       "Majo to Youhei - Anime sobre mercenario ajudando bruxa a se salvar ganha trailer",
     slug: "majo-to-youhei-anime-mercenario-bruxa-trailer",
     category: "Noticias",
+    tags: ["trailer", "fantasia", "estreia"],
     bannerImageUrl:
       "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?auto=format&fit=crop&w=1600&q=80",
     summary:
@@ -72,6 +76,7 @@ const demoPosts: Post[] = [
     title: "Temporada de outono revela novas estreias de fantasia e acao",
     slug: "temporada-outono-estreias-fantasia-acao",
     category: "Guia",
+    tags: ["temporada", "outono", "guia"],
     bannerImageUrl:
       "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?auto=format&fit=crop&w=1200&q=80",
     summary:
@@ -89,6 +94,7 @@ const demoPosts: Post[] = [
     title: "Novo trailer destaca batalhas e visual de anime original",
     slug: "novo-trailer-batalhas-visual-anime-original",
     category: "Trailer",
+    tags: ["trailer", "acao", "original"],
     bannerImageUrl:
       "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=1200&q=80",
     summary:
@@ -109,6 +115,7 @@ function mapPost(post: DbPost): Post {
     title: post.title,
     slug: post.slug,
     category: post.category,
+    tags: normalizeTags(post.tags),
     bannerImageUrl: post.banner_image_url,
     summary: post.summary,
     contentHtml: post.content_html,
@@ -205,7 +212,7 @@ export async function searchPosts(options: {
   const filtered = posts.filter((post) => {
     if (normalizedQuery) {
       const haystack = normalizeSearchText(
-        [post.title, post.category, post.summary ?? ""].join(" "),
+        [post.title, post.category, post.summary ?? "", ...post.tags].join(" "),
       );
       if (!haystack.includes(normalizedQuery)) {
         return false;
@@ -268,6 +275,7 @@ export function createSlug(title: string) {
 export async function createPost(input: {
   title: string;
   category: string;
+  tags?: string[];
   bannerImageUrl?: string;
   summary?: string;
   contentHtml: string;
@@ -275,6 +283,7 @@ export async function createPost(input: {
   authorId?: string;
 }) {
   const sql = getClient();
+  const tags = normalizeTags(input.tags);
   const baseSlug = createSlug(input.title);
   const existing = await sql<{ slug: string }[]>`
     SELECT slug
@@ -294,6 +303,7 @@ export async function createPost(input: {
         title,
         slug,
         category,
+        tags,
         banner_image_url,
         summary,
         content_html,
@@ -305,6 +315,7 @@ export async function createPost(input: {
         ${input.title},
         ${slug},
         ${input.category},
+        ${tags},
         ${input.bannerImageUrl || null},
         ${input.summary || null},
         ${input.contentHtml},
@@ -345,6 +356,7 @@ export async function updatePost(
   input: {
     title: string;
     category: string;
+    tags?: string[];
     bannerImageUrl?: string;
     summary?: string;
     contentHtml: string;
@@ -352,12 +364,14 @@ export async function updatePost(
   },
 ) {
   const sql = getClient();
+  const tags = normalizeTags(input.tags);
   const posts = await sql<DbPost[]>`
     WITH updated AS (
       UPDATE posts
       SET
         title = ${input.title},
         category = ${input.category},
+        tags = ${tags},
         banner_image_url = ${input.bannerImageUrl || null},
         summary = ${input.summary || null},
         content_html = ${input.contentHtml},

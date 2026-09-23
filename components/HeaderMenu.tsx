@@ -4,14 +4,19 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getPostPath, type Post } from "@/lib/post-utils";
+import { categoryToSlug, getPostPath, type Post } from "@/lib/post-utils";
 
 type HeaderMenuProps = {
   years: number[];
   guides?: Post[];
+  categories?: string[];
 };
 
-export function HeaderMenu({ years, guides = [] }: HeaderMenuProps) {
+export function HeaderMenu({
+  years,
+  guides = [],
+  categories = [],
+}: HeaderMenuProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -75,7 +80,28 @@ export function HeaderMenu({ years, guides = [] }: HeaderMenuProps) {
             </div>
 
             <nav className="flex-1 p-3">
-              <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+              {categories.length > 0 ? (
+                <>
+                  <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    Categorias
+                  </p>
+                  <ul className="space-y-0.5">
+                    {categories.map((category) => (
+                      <li key={category}>
+                        <Link
+                          href={`/${categoryToSlug(category)}`}
+                          onClick={() => setOpen(false)}
+                          className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-zinc-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          {category}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+
+              <p className="mt-4 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
                 Guias de Temporada
               </p>
               {recentGuides.length > 0 ? (

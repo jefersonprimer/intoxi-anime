@@ -37,6 +37,9 @@ import {
   Table2,
 } from "lucide-react";
 import {
+  Twitter,
+} from "./editor/twitter";
+import {
   Fragment,
   useCallback,
   useEffect,
@@ -549,6 +552,7 @@ export function RichTextEditor({
         controls: true,
         nocookie: true,
       }),
+      Twitter,
       TableCellBackground,
       TableCell,
       TableHeader,
@@ -827,6 +831,21 @@ export function RichTextEditor({
     }
   }
 
+  function addTwitter() {
+    const value = window.prompt(
+      "Cole a URL do post no X ou o codigo do embed",
+    );
+    if (!value) {
+      return;
+    }
+    const ok = editor?.chain().focus().setTwitter({ src: value }).run();
+    if (!ok) {
+      window.alert(
+        "Nao foi possivel reconhecer o post. Use uma URL como https://x.com/user/status/123 ou o embed completo.",
+      );
+    }
+  }
+
   function setLink() {
     const previousUrl = editor?.getAttributes("link").href;
     const url = window.prompt("URL do link", previousUrl);
@@ -1088,6 +1107,16 @@ export function RichTextEditor({
           icon: <PlaySquare size={18} />,
           label: "Video",
           onClick: addYoutube,
+        },
+        {
+          key: "twitter",
+          icon: (
+            <span className="text-[13px] font-black leading-none tracking-tight">
+              𝕏
+            </span>
+          ),
+          label: "Post do X",
+          onClick: addTwitter,
         },
       ]
     : [];

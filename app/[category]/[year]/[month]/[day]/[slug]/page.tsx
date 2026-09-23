@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminPostActions } from "@/components/AdminPostActions";
 import { HomePostSidebar } from "@/components/HomePostSidebar";
 import { PostAuthor } from "@/components/PostAuthor";
+import { TwitterWidgets } from "@/components/TwitterWidgets";
 import { getSessionUser } from "@/lib/auth";
 import {
   categoryToSlug,
@@ -83,16 +84,28 @@ export default async function PostPage({
   const allPosts = await getPosts();
   const relatedLimit = 4;
   const categorySlug = categoryToSlug(post.category);
+  const postTagSet = new Set(post.tags.map((tag) => tag.toLowerCase()));
   const otherPosts = allPosts.filter((item) => item.id !== post.id);
-  const sameCategory = otherPosts.filter(
-    (item) => categoryToSlug(item.category) === categorySlug,
-  );
-  const relatedPosts = [
-    ...sameCategory,
-    ...otherPosts.filter(
-      (item) => categoryToSlug(item.category) !== categorySlug,
-    ),
-  ].slice(0, relatedLimit);
+
+  function sharedTagCount(item: Post) {
+    return item.tags.reduce(
+      (count, tag) => count + (postTagSet.has(tag.toLowerCase()) ? 1 : 0),
+      0,
+    );
+  }
+
+  const relatedPosts = [...otherPosts]
+    .sort((a, b) => {
+      const tagDelta = sharedTagCount(b) - sharedTagCount(a);
+      if (tagDelta !== 0) return tagDelta;
+
+      const aSameCategory = categoryToSlug(a.category) === categorySlug ? 1 : 0;
+      const bSameCategory = categoryToSlug(b.category) === categorySlug ? 1 : 0;
+      if (bSameCategory !== aSameCategory) return bSameCategory - aSameCategory;
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .slice(0, relatedLimit);
 
   return (
     <div className="min-h-screen bg-[#1E1E1E] px-4 xl:px-0">
@@ -157,6 +170,20 @@ export default async function PostPage({
                     </span>
                   </div>
                 </div>
+                {post.tags.length > 0 ? (
+                  <ul className="mt-5 flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <li key={tag.toLowerCase()}>
+                        <Link
+                          href={`/buscar?q=${encodeURIComponent(tag)}`}
+                          className="inline-block rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-slate-300 transition hover:border-[#1e73be] hover:text-white"
+                        >
+                          {tag}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {isAdmin ? (
                   <div className="mt-6">
                     <AdminPostActions postId={post.id} postSlug={post.slug} />
@@ -170,6 +197,7 @@ export default async function PostPage({
                 className="post-content"
                 dangerouslySetInnerHTML={{ __html: post.contentHtml }}
               />
+              <TwitterWidgets />
             </section>
           </article>
 

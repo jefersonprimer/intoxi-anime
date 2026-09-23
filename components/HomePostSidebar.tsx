@@ -15,7 +15,7 @@ export function HomePostSidebar({
 
   return (
     <aside className="sticky top-6 flex flex-col self-start rounded-lg  p-5 lg:top-24">
-      <p className="mb-4 text-sm md:text-xl font-black text-white">{title}</p>
+      <p className="mb-4 text-2xl md:text-4xl font-bold text-white">{title}</p>
       <div className="flex flex-1 flex-col gap-4">
         {orderedPosts.map((post, index) => (
           <Link
@@ -44,7 +44,7 @@ export function HomePostSidebar({
               <span className="inline-block w-fit text-xs font-bold px-2 uppercase text-[#1E1E1E] bg-[#1e73be] rounded-xl">
                 {post.category}
               </span>
-              <h3 className="line-clamp-2 text-sm font-black leading-snug text-white">
+              <h3 className="line-clamp-2 text-sm font-bold text-white">
                 {post.title}
               </h3>
               <div className="flex items-center justify-between gap-2">

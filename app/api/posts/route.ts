@@ -4,6 +4,7 @@ import {
   categoryToSlug,
   extractFirstImageUrl,
   getPostPath,
+  normalizeTags,
 } from "@/lib/post-utils";
 import {
   createPost,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
     const post = await createPost({
       title: String(body.title ?? "").trim(),
       category: String(body.category ?? "Noticias").trim(),
+      tags: normalizeTags(body.tags),
       bannerImageUrl: hasBanner || extractFirstImageUrl(contentHtml),
       summary: String(body.summary ?? "").trim(),
       contentHtml,
@@ -105,6 +107,7 @@ export async function PUT(request: Request) {
     const post = await updatePost(postId, {
       title,
       category: category || "Noticias",
+      tags: normalizeTags(body.tags),
       bannerImageUrl: hasBanner || extractFirstImageUrl(contentHtml),
       summary,
       contentHtml,

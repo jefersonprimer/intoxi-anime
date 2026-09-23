@@ -90,7 +90,7 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
           <span className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-[#1E1E1E] bg-[#1e73be] rounded-xl">
             {activePost.category}
           </span>
-          <h1 className="mt-2 text-2xl font-black leading-tight text-white transition hover:text-sky-300 sm:text-3xl lg:text-4xl">
+          <h1 className="mt-2 text-xl font-black leading-tight text-white transition hover:text-sky-300 sm:text-3xl lg:text-4xl">
             {activePost.title}
           </h1>
         </Link>

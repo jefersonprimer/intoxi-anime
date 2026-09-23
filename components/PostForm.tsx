@@ -14,7 +14,7 @@ const RichTextEditor = dynamic(
     ),
   },
 );
-import { extractFirstImageUrl, getPostPath, type Post } from "@/lib/post-utils";
+import { extractFirstImageUrl, getPostPath, normalizeTags, type Post } from "@/lib/post-utils";
 
 const inputClass =
   "h-12 rounded-md border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300";
@@ -57,6 +57,9 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
     initialPost?.bannerImageUrl ?? "",
   );
   const [category, setCategory] = useState(initialPost?.category ?? "Noticias");
+  const [tagsInput, setTagsInput] = useState(
+    (initialPost?.tags ?? []).join(", "),
+  );
   const [summary, setSummary] = useState(initialPost?.summary ?? "");
   const [isFeatured, setIsFeatured] = useState(
     initialPost?.isFeatured ?? false,
@@ -78,6 +81,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
 
   const contentBanner = extractFirstImageUrl(contentHtml);
   const effectiveBanner = bannerImageUrl.trim() || contentBanner;
+  const tags = normalizeTags(tagsInput);
 
   function hasContent(): boolean {
     return contentHtml.replace(/<[^>]*>/g, "").trim().length > 0;
@@ -112,6 +116,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
           ...(isEditing ? { postId: initialPost?.id } : {}),
           title,
           category: category || "Noticias",
+          tags,
           bannerImageUrl,
           summary,
           isFeatured,
@@ -241,6 +246,32 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
               </span>
             </label>
           </div>
+
+          <label className="flex flex-col gap-2">
+            <span className={labelClass}>Tags</span>
+            <input
+              value={tagsInput}
+              onChange={(event) => setTagsInput(event.target.value)}
+              className={inputClass}
+              placeholder="trailer, temporada, fantasia"
+            />
+            {tags.length > 0 ? (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.toLowerCase()}
+                    className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-slate-300"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs font-semibold text-slate-500">
+                Separe as tags por virgula. Maximo de 12.
+              </p>
+            )}
+          </label>
 
           <label className="flex flex-col gap-2">
             <span className={labelClass}>Resumo</span>
