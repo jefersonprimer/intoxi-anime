@@ -1,5 +1,6 @@
 import Image from "next/image";
-import type { Author } from "@/lib/post-utils";
+import Link from "next/link";
+import { authorToSlug, type Author } from "@/lib/post-utils";
 
 const FALLBACK_NAME = "Equipe Intoxi Anime";
 
@@ -13,27 +14,27 @@ type PostAuthorProps = {
   author: Author | null;
   size?: "sm" | "md";
   className?: string;
+  link?: boolean;
 };
 
 export function PostAuthor({
   author,
   size = "sm",
   className = "",
+  link = true,
 }: PostAuthorProps) {
   const { name, avatarUrl, initial } = getAuthorDisplay(author);
   const avatarClass = size === "md" ? "size-9 text-sm" : "size-7 text-xs";
+  const authorPath = `/autor/${encodeURIComponent(authorToSlug(name))}`;
 
-  return (
-    <span
-      className={`inline-flex items-center gap-2 ${className}`}
-      title={name}
-    >
+  const content = (
+    <>
       {avatarUrl ? (
         <Image
           src={avatarUrl}
           alt={name}
-          width={size === "md" ? 36 : 28}
-          height={size === "md" ? 36 : 28}
+          width={size === "md" ? 24 : 24}
+          height={size === "md" ? 24 : 24}
           unoptimized
           className={`shrink-0 rounded-full bg-white/10 object-cover ${size === "md" ? "size-9" : "size-7"}`}
         />
@@ -44,9 +45,25 @@ export function PostAuthor({
           {initial}
         </span>
       )}
-      <span className="truncate text-base font-normal text-white">
+      <span className="truncate text-sm font-normal hover:underline">
         {name}
       </span>
-    </span>
+    </>
+  );
+
+  const baseClassName = `inline-flex items-center gap-2 ${className}`;
+
+  if (!link) {
+    return (
+      <span className={baseClassName} title={name}>
+        {content}
+      </span>
+    );
+  }
+
+  return (
+    <Link href={authorPath} title={name} className={baseClassName}>
+      {content}
+    </Link>
   );
 }

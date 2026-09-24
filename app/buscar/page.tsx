@@ -19,10 +19,10 @@ export default async function SearchPage({
   const posts = await getPosts();
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E]">
+    <div className="min-h-screen bg-background">
       <main className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-3 xl:px-0">
         <section className="min-w-0 lg:col-span-2">
-          <h1 className="mt-2 text-2xl font-normal text-white">
+          <h1 className="mt-2 text-2xl font-normal text-foreground">
             {query ? `Resultados para: "${query}"` : "Buscar posts"}
           </h1>
           <SearchResults

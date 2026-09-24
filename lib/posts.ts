@@ -1,9 +1,13 @@
 import { getClient } from "@/lib/db";
 import { calculateReadingTime } from "@/lib/reading-time";
 import {
+  FALLBACK_AUTHOR_NAME,
   SEARCH_PAGE_SIZE,
+  authorToSlug,
   categoryToSlug,
+  emptyAuthorLinks,
   normalizeTags,
+  type Author,
   type Post,
   type SearchDateFilter,
   type SearchSortOption,
@@ -27,6 +31,13 @@ type DbPost = {
   updated_at: Date;
   author_name: string | null;
   author_avatar_url: string | null;
+  author_bio: string | null;
+  author_x_url: string | null;
+  author_instagram_url: string | null;
+  author_facebook_url: string | null;
+  author_youtube_url: string | null;
+  author_tiktok_url: string | null;
+  author_website_url: string | null;
 };
 
 function postSelect(sql: SqlClient) {
@@ -45,7 +56,14 @@ function postSelect(sql: SqlClient) {
       p.created_at,
       p.updated_at,
       u.name AS author_name,
-      u.avatar_url AS author_avatar_url
+      u.avatar_url AS author_avatar_url,
+      u.bio AS author_bio,
+      u.x_url AS author_x_url,
+      u.instagram_url AS author_instagram_url,
+      u.facebook_url AS author_facebook_url,
+      u.youtube_url AS author_youtube_url,
+      u.tiktok_url AS author_tiktok_url,
+      u.website_url AS author_website_url
     FROM posts p
     LEFT JOIN users u ON u.id = p.author_id
   `;
@@ -69,7 +87,7 @@ const demoPosts: Post[] = [
     isFeatured: true,
     createdAt: "2026-09-18T12:00:00.000Z",
     updatedAt: "2026-09-18T12:00:00.000Z",
-    author: { name: "Redacao Intoxi", avatarUrl: null },
+    author: { name: "Redacao Intoxi", avatarUrl: null, bio: null, ...emptyAuthorLinks() },
   },
   {
     id: "demo-season",
@@ -87,7 +105,7 @@ const demoPosts: Post[] = [
     isFeatured: false,
     createdAt: "2026-09-17T12:00:00.000Z",
     updatedAt: "2026-09-17T12:00:00.000Z",
-    author: { name: "Redacao Intoxi", avatarUrl: null },
+    author: { name: "Redacao Intoxi", avatarUrl: null, bio: null, ...emptyAuthorLinks() },
   },
   {
     id: "demo-trailer",
@@ -105,9 +123,26 @@ const demoPosts: Post[] = [
     isFeatured: false,
     createdAt: "2026-09-16T12:00:00.000Z",
     updatedAt: "2026-09-16T12:00:00.000Z",
-    author: { name: "Redacao Intoxi", avatarUrl: null },
+    author: { name: "Redacao Intoxi", avatarUrl: null, bio: null, ...emptyAuthorLinks() },
   },
 ];
+
+function mapAuthor(post: DbPost): Author | null {
+  if (!post.author_name) {
+    return null;
+  }
+  return {
+    name: post.author_name,
+    avatarUrl: post.author_avatar_url,
+    bio: post.author_bio,
+    xUrl: post.author_x_url,
+    instagramUrl: post.author_instagram_url,
+    facebookUrl: post.author_facebook_url,
+    youtubeUrl: post.author_youtube_url,
+    tiktokUrl: post.author_tiktok_url,
+    websiteUrl: post.author_website_url,
+  };
+}
 
 function mapPost(post: DbPost): Post {
   return {
@@ -123,9 +158,7 @@ function mapPost(post: DbPost): Post {
     isFeatured: post.is_featured,
     createdAt: post.created_at.toISOString(),
     updatedAt: post.updated_at.toISOString(),
-    author: post.author_name
-      ? { name: post.author_name, avatarUrl: post.author_avatar_url }
-      : null,
+    author: mapAuthor(post),
   };
 }
 
@@ -328,7 +361,14 @@ export async function createPost(input: {
     SELECT
       inserted.*,
       u.name AS author_name,
-      u.avatar_url AS author_avatar_url
+      u.avatar_url AS author_avatar_url,
+      u.bio AS author_bio,
+      u.x_url AS author_x_url,
+      u.instagram_url AS author_instagram_url,
+      u.facebook_url AS author_facebook_url,
+      u.youtube_url AS author_youtube_url,
+      u.tiktok_url AS author_tiktok_url,
+      u.website_url AS author_website_url
     FROM inserted
     LEFT JOIN users u ON u.id = inserted.author_id
   `;
@@ -383,7 +423,14 @@ export async function updatePost(
     SELECT
       updated.*,
       u.name AS author_name,
-      u.avatar_url AS author_avatar_url
+      u.avatar_url AS author_avatar_url,
+      u.bio AS author_bio,
+      u.x_url AS author_x_url,
+      u.instagram_url AS author_instagram_url,
+      u.facebook_url AS author_facebook_url,
+      u.youtube_url AS author_youtube_url,
+      u.tiktok_url AS author_tiktok_url,
+      u.website_url AS author_website_url
     FROM updated
     LEFT JOIN users u ON u.id = updated.author_id
   `;
@@ -428,11 +475,82 @@ export async function getSeasonGuideYears() {
   return [...new Set(guides.map(getPostYear))].sort((a, b) => b - a);
 }
 
+export function isSeasonGuideCategorySlug(categorySlug: string) {
+  const slug = categoryToSlug(categorySlug);
+  return slug.includes("guia") || slug.includes("temporada");
+}
+
 export async function getPostsByCategory(categorySlug: string) {
+  if (isSeasonGuideCategorySlug(categorySlug)) {
+    return getSeasonGuidePosts();
+  }
+
   const posts = await getPosts();
   const targetSlug = categoryToSlug(categorySlug);
   return posts.filter(
     (post) => categoryToSlug(post.category) === targetSlug
   );
+}
+
+export async function getPostsByAuthor(authorSlug: string) {
+  const targetSlug = authorToSlug(authorSlug);
+  const posts = await getPosts();
+  return posts.filter((post) => {
+    const authorName = post.author?.name?.trim() || FALLBACK_AUTHOR_NAME;
+    return authorToSlug(authorName) === targetSlug;
+  });
+}
+
+type DbAuthor = {
+  name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  x_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
+  website_url: string | null;
+};
+
+export async function getAuthorBySlug(authorSlug: string): Promise<Author | null> {
+  const targetSlug = authorToSlug(authorSlug);
+  const sql = getClient();
+
+  try {
+    const rows = await sql<DbAuthor[]>`
+      SELECT
+        name,
+        avatar_url,
+        bio,
+        x_url,
+        instagram_url,
+        facebook_url,
+        youtube_url,
+        tiktok_url,
+        website_url
+      FROM users
+      WHERE name IS NOT NULL AND name <> ''
+    `;
+
+    const row = rows.find((user) => authorToSlug(user.name) === targetSlug);
+    if (!row) {
+      return null;
+    }
+
+    return {
+      name: row.name,
+      avatarUrl: row.avatar_url,
+      bio: row.bio,
+      xUrl: row.x_url,
+      instagramUrl: row.instagram_url,
+      facebookUrl: row.facebook_url,
+      youtubeUrl: row.youtube_url,
+      tiktokUrl: row.tiktok_url,
+      websiteUrl: row.website_url,
+    };
+  } catch {
+    return null;
+  }
 }
 

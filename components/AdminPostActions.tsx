@@ -52,7 +52,7 @@ export function AdminPostActions({ postId, postSlug }: AdminPostActionsProps) {
     <div className="flex flex-wrap items-center gap-3">
       <Link
         href={`/editar-post/${postSlug}`}
-        className="inline-flex h-10 items-center gap-2 rounded-md border border-sky-300/40 bg-sky-400/10 px-4 text-sm font-bold text-sky-200 transition hover:bg-sky-400/20"
+        className="inline-flex h-10 items-center gap-2 rounded-md bg-[#1e73be] px-4 text-sm font-bold text-white transition hover:bg-[#1862a3]"
       >
         <Pencil size={16} aria-hidden="true" />
         Editar
@@ -61,12 +61,12 @@ export function AdminPostActions({ postId, postSlug }: AdminPostActionsProps) {
         type="button"
         onClick={handleDelete}
         disabled={busy}
-        className="inline-flex h-10 items-center gap-2 rounded-md border border-red-300/30 px-4 text-sm font-bold text-red-200 transition hover:bg-red-400 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Trash2 size={16} aria-hidden="true" />
         {busy ? "Apagando..." : "Apagar"}
       </button>
-      {error ? <span className="text-sm font-bold text-red-300">{error}</span> : null}
+      {error ? <span className="text-sm font-bold text-red-600">{error}</span> : null}
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default async function SignupPage() {
   }
 
   return (
-    <div className="flex flex-col bg-[#1E1E1E]">
+    <div className="flex flex-col">
       <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
         <AuthForm mode="signup" />
       </main>

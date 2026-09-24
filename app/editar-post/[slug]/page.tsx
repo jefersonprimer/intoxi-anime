@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isAuthorRole } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/posts";
 import { PostForm } from "@/components/PostForm";
 
@@ -12,7 +12,7 @@ export default async function EditPostPage({
 }: PageProps<"/editar-post/[slug]">) {
   const user = await getSessionUser();
 
-  if (user?.role !== "admin") {
+  if (!isAuthorRole(user?.role)) {
     redirect("/login");
   }
 
@@ -24,7 +24,7 @@ export default async function EditPostPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E]">
+    <div className="min-h-screen bg-background">
       <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <PostForm mode="edit" initialPost={post} />
       </main>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ComponentProps, FormEvent, ReactNode, useState } from "react";
-import { Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 type FloatingFieldProps = ComponentProps<"input"> & {
   label: string;
@@ -34,13 +34,13 @@ function FloatingField({
           setFocused(false);
           inputProps.onBlur?.(event);
         }}
-        className={`h-12 w-full rounded-md border border-white/10 bg-white/[0.04] px-4 pb-2 pt-6 text-sm text-white outline-none transition focus:border-sky-300 ${className}`}
+        className={`h-12 w-full rounded-md border border-border bg-background px-4 pb-2 pt-6 text-sm text-foreground outline-none transition focus:border-[#1e73be] ${className}`}
       />
       <span
         className={`pointer-events-none absolute z-10 transition-all duration-200 ${
           float
-            ? "left-4 top-0 -translate-y-1/2 bg-[#1E1E1E] px-2 text-xs text-slate-300"
-            : "left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500"
+            ? "left-4 top-0 -translate-y-1/2 bg-background px-2 text-xs text-muted"
+            : "left-4 top-1/2 -translate-y-1/2 text-sm text-muted"
         }`}
       >
         {label}
@@ -107,7 +107,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form onSubmit={handleSubmit} className="mx-auto w-full md:max-w-md">
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl md:text-3xl font-medium text-white">
+        <h1 className="text-2xl md:text-3xl font-medium text-foreground">
           {isLogin ? "Entrar" : "Criar conta"}
         </h1>
       </div>
@@ -140,7 +140,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               type="button"
               onClick={() => setShowPassword((shown) => !shown)}
               aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-slate-400 transition hover:text-sky-200"
+              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-muted transition hover:text-[#1e73be]"
             >
               {showPassword ? (
                 <EyeOff size={18} aria-hidden="true" />
@@ -153,24 +153,24 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
 
       {message ? (
-        <p className="mt-4 text-sm font-bold text-red-300">{message}</p>
+        <p className="mt-4 text-sm font-bold text-red-400">{message}</p>
       ) : null}
 
       <button
         type="submit"
         disabled={busy}
-        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-black text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1e73be] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 uppercase"
       >
         {busy ? "Aguarde..." : isLogin ? "Entrar" : "Criar conta"}
       </button>
 
-      <p className="mt-5 text-center text-sm text-slate-400">
+      <p className="mt-5 text-center text-sm text-muted">
         {isLogin ? (
           <>
             Ainda nao tem conta?{" "}
             <Link
               href="/signup"
-              className="font-bold text-slate-300 hover:text-white"
+              className="font-bold text-[#1e73be] hover:text-link-hover"
             >
               Criar conta
             </Link>
@@ -180,7 +180,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             Ja tem conta?{" "}
             <Link
               href="/login"
-              className="font-bold text-slate-300 hover:text-white"
+              className="font-bold text-[#1e73be] hover:text-link-hover"
             >
               Entrar
             </Link>

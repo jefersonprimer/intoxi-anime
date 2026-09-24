@@ -68,7 +68,7 @@ export function HeaderSearch() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-label="Buscar posts"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full  text-zinc-300 transition hover:border-white/20 hover:text-white"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full text-header-muted transition hover:text-header-fg"
       >
         {open ? (
           <X size={24} aria-hidden="true" />
@@ -80,7 +80,7 @@ export function HeaderSearch() {
       {open ? (
         <div
           role="search"
-          className="absolute inset-x-0 top-full z-50 w-full border-b border-white/10 bg-[#1E1E1E] py-5 shadow-2xl shadow-black/80"
+          className="absolute inset-x-0 top-full z-50 w-full border-b border-header-border bg-header-bg py-5 shadow-2xl shadow-black/20"
         >
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <form
@@ -90,7 +90,7 @@ export function HeaderSearch() {
               <Search
                 size={24}
                 aria-hidden="true"
-                className="pointer-events-none absolute left-0 text-zinc-400"
+                className="pointer-events-none absolute left-0 text-header-muted"
               />
               <input
                 ref={inputRef}
@@ -98,12 +98,12 @@ export function HeaderSearch() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Digite sua busca e pressione Enter..."
-                className="w-full border-b-2 border-white/20 bg-transparent py-3 pl-8 pr-10 text-base md:text-2xl font-medium text-white outline-none transition-colors duration-200 placeholder:text-zinc-500 focus:border-[#1e73be]"
+                className="w-full border-b-2 border-header-border bg-transparent py-3 pl-8 pr-10 text-base font-medium text-header-fg outline-none transition-colors duration-200 placeholder:text-header-muted focus:border-[#1e73be] md:text-2xl"
               />
               <button
                 type="button"
                 onClick={handleClearOrClose}
-                className="absolute right-0 p-1 text-zinc-400 transition hover:text-white"
+                className="absolute right-0 p-1 text-header-muted transition hover:text-header-fg"
                 title={query ? "Limpar busca" : "Fechar busca"}
               >
                 <X size={24} aria-hidden="true" />

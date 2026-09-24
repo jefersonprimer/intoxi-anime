@@ -10,8 +10,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className="h-full antialiased">
-      <body className="min-h-full bg-[#1E1E1E] text-white">
+    <html lang="pt-BR" data-theme="dark" suppressHydrationWarning className="h-full antialiased">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-background text-foreground">
         <Header />
         {children}
         <Footer />

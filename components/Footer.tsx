@@ -5,8 +5,8 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className=" bg-[#1E1E1E] text-slate-300 px-">
-      <div className="mx-auto w-full max-w-7xl py-10">
+    <footer className="bg-header-bg text-header-muted">
+      <div className="mx-auto w-full max-w-7xl py-10 px-4 xl-px-0">
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           {/* Logo & Description */}
           <div className="flex flex-col gap-3">
@@ -19,17 +19,17 @@ export function Footer() {
                 alt="Intoxi Anime"
                 width={2172}
                 height={724}
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="footer-logo h-12 w-auto object-contain"
               />
             </Link>
-            <p className="max-w-md text-sm text-slate-400">
+            <p className="max-w-md text-sm text-header-muted">
               Intoxi Anime - notícias, trailers e guias de temporada.
             </p>
           </div>
 
           {/* Social Links */}
           <div className="flex flex-col gap-3 md:items-end">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-header-muted">
               Siga-nos & Comunidade
             </span>
             <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
-                className="group flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-300 transition-all hover:border-red-600/50 hover:bg-red-600/10 hover:text-red-500 hover:scale-105"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-header-border bg-header-border/40 text-header-muted transition-all hover:scale-105 hover:border-red-600/50 hover:bg-red-600/10 hover:text-red-500"
               >
                 <svg
                   role="img"
@@ -58,7 +58,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="group flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-300 transition-all hover:border-pink-500/50 hover:bg-pink-500/10 hover:text-pink-400 hover:scale-105"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-header-border bg-header-border/40 text-header-muted transition-all hover:scale-105 hover:border-pink-500/50 hover:bg-pink-500/10 hover:text-pink-400"
               >
                 <svg
                   role="img"
@@ -77,7 +77,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="X (Twitter)"
-                className="group flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-300 transition-all hover:border-slate-300 hover:bg-white/10 hover:text-white hover:scale-105"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-header-border bg-header-border/40 text-header-muted transition-all hover:scale-105 hover:border-header-fg/40 hover:bg-header-border hover:text-header-fg"
               >
                 <svg
                   role="img"
@@ -96,7 +96,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="group flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-300 transition-all hover:border-blue-600/50 hover:bg-blue-600/10 hover:text-blue-500 hover:scale-105"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-header-border bg-header-border/40 text-header-muted transition-all hover:scale-105 hover:border-blue-600/50 hover:bg-blue-600/10 hover:text-blue-500"
               >
                 <svg
                   role="img"
@@ -115,7 +115,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
-                className="group flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-300 transition-all hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-400 hover:scale-105"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-header-border bg-header-border/40 text-header-muted transition-all hover:scale-105 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-400"
               >
                 <svg
                   role="img"
@@ -132,7 +132,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 px-3 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-header-border px-3 pt-6 text-xs text-header-muted sm:flex-row">
           <p>© {currentYear} Intoxi Anime. Todos os direitos reservados.</p>
           <a className="hover:underline" href="https://primerlabs.vercel.app">
             Desenvolvido por PrimerLabs ltda

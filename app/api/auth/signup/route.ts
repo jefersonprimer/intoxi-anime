@@ -1,4 +1,9 @@
-import { createSession, findUserByEmail, hashPassword } from "@/lib/auth";
+import {
+  createSession,
+  findUserByEmail,
+  hashPassword,
+  isWriterEmail,
+} from "@/lib/auth";
 import { getClient } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -38,7 +43,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const role = isAdmin ? "admin" : "user";
+    const role = isAdmin ? "admin" : isWriterEmail(email) ? "writer" : "user";
 
     const name = String(body.name ?? "").trim() || null;
     const avatarUrl = String(body.avatarUrl ?? "").trim() || null;

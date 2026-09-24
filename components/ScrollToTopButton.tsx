@@ -13,7 +13,7 @@ export function ScrollToTopButton() {
       <button
         onClick={scrollToTop}
         type="button"
-        className="inline-flex items-center gap-2 rounded-3xl bg-[#1e73be] px-6 py-3 font-semibold text-black transition hover:border-white border hover:opacity-90 active:scale-95 shadow-md"
+        className="inline-flex items-center gap-2 rounded-3xl border border-transparent bg-[#1e73be] px-6 py-3 font-semibold text-category-fg shadow-md transition hover:border-foreground hover:bg-[#1862a3] hover:text-foreground hover:shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e73be] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         Voltar ao Topo
       </button>

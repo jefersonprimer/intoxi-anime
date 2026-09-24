@@ -66,7 +66,7 @@ export function loadTwitterWidgets(): Promise<TwitterReadyApi> {
     }
 
     window.twttr?.ready((api) => {
-      if (api.widgets?.createTweet) {
+      if (api.widgets) {
         resolve(api);
       }
     });

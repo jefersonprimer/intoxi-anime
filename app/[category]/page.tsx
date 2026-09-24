@@ -1,5 +1,6 @@
+import { HomePostSidebar } from "@/components/HomePostSidebar";
 import { PostCard } from "@/components/PostCard";
-import { getPostsByCategory } from "@/lib/posts";
+import { getPosts, getPostsByCategory } from "@/lib/posts";
 
 export async function generateMetadata({
   params,
@@ -20,35 +21,33 @@ export default async function CategoryPage({
 }) {
   const { category } = await params;
   const decodedCategory = decodeURIComponent(category);
-  const posts = await getPostsByCategory(decodedCategory);
+  const [posts, allPosts] = await Promise.all([
+    getPostsByCategory(decodedCategory),
+    getPosts(),
+  ]);
   const categoryName = posts[0]?.category ?? decodedCategory;
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E]">
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="mb-8">
-          <p className="text-sm font-black uppercase tracking-[0.26em] text-sky-300">
-            categoria
-          </p>
-          <h1 className="mt-2 text-4xl font-black text-white capitalize">
+    <div className="min-h-screen bg-background">
+      <main className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-3 xl:px-0">
+        <section className="min-w-0 lg:col-span-2">
+          <h1 className="mb-8 mt-2 text-4xl font-black text-foreground capitalize">
             {categoryName}
           </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            {posts.length} {posts.length === 1 ? "post encontrado" : "posts encontrados"}
-          </p>
-        </section>
 
-        {posts.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border border-white/10 bg-white/[0.035] p-8 text-slate-300">
-            Nenhum post encontrado nesta categoria.
-          </div>
-        )}
+          {posts.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border bg-surface-muted p-8 text-muted">
+              Nenhum post encontrado nesta categoria.
+            </div>
+          )}
+        </section>
+        <HomePostSidebar posts={allPosts.slice(0, 4)} title="Últimas notícias" />
       </main>
     </div>
   );

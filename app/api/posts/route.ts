@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isAuthorRole } from "@/lib/auth";
 import {
   categoryToSlug,
   extractFirstImageUrl,
@@ -15,9 +15,9 @@ import {
 
 export const runtime = "nodejs";
 
-async function requireAdmin() {
+async function requireAuthor() {
   const user = await getSessionUser();
-  if (user?.role !== "admin") {
+  if (!isAuthorRole(user?.role)) {
     return null;
   }
   return user;
@@ -30,10 +30,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireAdmin();
+    const user = await requireAuthor();
     if (!user) {
       return Response.json(
-        { message: "Acesso restrito a administradores." },
+        { message: "Acesso restrito a escritores e administradores." },
         { status: 401 },
       );
     }
@@ -74,9 +74,9 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    if (!(await requireAdmin())) {
+    if (!(await requireAuthor())) {
       return Response.json(
-        { message: "Acesso restrito a administradores." },
+        { message: "Acesso restrito a escritores e administradores." },
         { status: 401 },
       );
     }
@@ -141,9 +141,9 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    if (!(await requireAdmin())) {
+    if (!(await requireAuthor())) {
       return Response.json(
-        { message: "Acesso restrito a administradores." },
+        { message: "Acesso restrito a escritores e administradores." },
         { status: 401 },
       );
     }

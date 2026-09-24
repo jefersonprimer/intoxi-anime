@@ -77,13 +77,13 @@ function FilterDropdown({
         aria-expanded={open}
         aria-controls={listId}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex h-11 w-full items-center justify-between gap-2 rounded-md border border-white/10 bg-[#252525] px-3.5 text-sm text-white transition hover:border-white/20 focus:border-sky-300 focus:outline-none"
+        className="inline-flex h-11 w-full items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 text-sm text-foreground transition hover:border-foreground/25 focus:border-[#1e73be] focus:outline-none"
       >
         <span className="truncate">{triggerLabel}</span>
         <ChevronDown
           size={16}
           aria-hidden="true"
-          className={`shrink-0 text-zinc-400 transition ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 text-muted transition ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -92,7 +92,7 @@ function FilterDropdown({
           id={listId}
           role="listbox"
           aria-label={name}
-          className="absolute left-0 right-0 top-full z-40 mt-1.5 max-h-64 overflow-y-auto rounded-md border border-white/10 bg-[#252525] py-1 shadow-xl shadow-black/50"
+          className="absolute left-0 right-0 top-full z-40 mt-1.5 max-h-64 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-xl shadow-black/20"
         >
           {options.map((option) => {
             const isSelected = option.value === value;
@@ -106,8 +106,8 @@ function FilterDropdown({
                   }}
                   className={`flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm transition ${
                     isSelected
-                      ? "bg-white/10 text-white"
-                      : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                      ? "bg-surface-muted text-foreground"
+                      : "text-muted hover:bg-surface-muted hover:text-foreground"
                   }`}
                 >
                   <span className="truncate">{option.label}</span>
@@ -115,7 +115,7 @@ function FilterDropdown({
                     <Check
                       size={16}
                       aria-hidden="true"
-                      className="shrink-0 text-sky-400"
+                      className="shrink-0 text-[#1e73be]"
                     />
                   ) : null}
                 </button>
@@ -149,8 +149,8 @@ export function SearchFilters({
   }));
 
   return (
-    <div className="mt-6 pb-4 flex flex-col gap-3 sm:flex-row sm:items-center border-b border-neutral-400">
-      <span className="shrink-0 text-base font-bold text-white">
+    <div className="mt-6 pb-4 flex flex-col gap-3 sm:flex-row sm:items-center border-b border-border">
+      <span className="shrink-0 text-base font-bold text-foreground">
         Ordenar por
       </span>
       <FilterDropdown

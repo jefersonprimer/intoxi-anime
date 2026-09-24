@@ -10,15 +10,15 @@ const RichTextEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-72 rounded-md border border-white/10 bg-white/[0.04] px-4 py-4" />
+      <div className="min-h-72 rounded-md border border-border bg-surface-muted px-4 py-4" />
     ),
   },
 );
 import { extractFirstImageUrl, getPostPath, normalizeTags, type Post } from "@/lib/post-utils";
 
 const inputClass =
-  "h-12 rounded-md border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300";
-const labelClass = "text-sm font-bold text-slate-200";
+  "h-12 rounded-md border border-border bg-surface px-4 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-[#1e73be]";
+const labelClass = "text-sm font-bold text-foreground";
 
 type CreatePostResponse = {
   message?: string;
@@ -161,7 +161,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       {message ? (
-        <p className="text-sm font-bold text-red-300">{message}</p>
+        <p className="text-sm font-bold text-red-600">{message}</p>
       ) : null}
       <button type="submit" className="hidden" aria-hidden="true" />
 
@@ -176,7 +176,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
                 setTitle(event.target.value);
                 resizeTitle();
               }}
-              className="w-full max-h-[190px] resize-none overflow-hidden bg-transparent px-4 py-4 text-[42px] font-normal leading-tight text-slate-100 outline-none transition placeholder:text-[#b3b3b1]"
+              className="w-full max-h-[190px] resize-none overflow-hidden bg-transparent px-4 py-4 text-[42px] font-normal leading-tight text-foreground outline-none transition placeholder:text-muted"
               placeholder="Titulo"
             />
           </label>
@@ -190,10 +190,10 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
       ) : (
         <section className="grid gap-5 p-5">
           <div>
-            <h2 className="text-lg font-black text-white">
+            <h2 className="text-lg font-black text-foreground">
               {isEditing ? "Confirmar alteracoes" : "Confirmar publicacao"}
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-muted">
               {isEditing
                 ? "Preencha os dados finais antes de salvar."
                 : "Preencha os dados finais antes de publicar."}
@@ -215,10 +215,10 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
             <img
               src={effectiveBanner}
               alt="Preview do banner"
-              className="w-full rounded-md border border-white/10 object-contain"
+              className="w-full rounded-md border border-border object-contain"
             />
           ) : (
-            <p className="text-xs font-semibold text-slate-400">
+            <p className="text-xs font-semibold text-muted">
               Nenhuma imagem encontrada no conteudo. Informe uma URL de banner
               acima.
             </p>
@@ -234,14 +234,14 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
               />
             </label>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 sm:mt-7">
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface px-4 py-3 sm:mt-7">
               <input
                 type="checkbox"
                 checked={isFeatured}
                 onChange={(event) => setIsFeatured(event.target.checked)}
-                className="h-4 w-4 accent-sky-400"
+                className="h-4 w-4 accent-[#1e73be]"
               />
-              <span className="text-sm font-bold text-slate-200">
+              <span className="text-sm font-bold text-foreground">
                 Post em destaque
               </span>
             </label>
@@ -260,14 +260,14 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
                 {tags.map((tag) => (
                   <span
                     key={tag.toLowerCase()}
-                    className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-slate-300"
+                    className="rounded-md border border-border bg-surface-muted px-2.5 py-1 text-xs font-semibold text-muted"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-xs font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-muted">
                 Separe as tags por virgula. Maximo de 12.
               </p>
             )}
@@ -292,13 +292,13 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
             <button
               type="button"
               onClick={() => setStep("edit")}
-              className="h-12 rounded-md px-6 text-sm font-bold text-slate-300 transition hover:text-white"
+              className="h-12 rounded-md px-6 text-sm font-bold text-muted transition hover:text-foreground"
             >
               Voltar e editar
             </button>
             <button
               type="submit"
-              className="h-12 rounded-md bg-sky-400 px-6 text-sm font-black text-slate-950 transition hover:bg-white"
+              className="h-12 rounded-md bg-[#1e73be] px-6 text-sm font-black text-white transition hover:bg-[#1862a3]"
             >
               {isEditing ? "Salvar alteracoes" : "Confirmar publicacao"}
             </button>

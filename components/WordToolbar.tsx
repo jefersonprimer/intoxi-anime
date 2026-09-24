@@ -3,8 +3,8 @@
 import { Fragment, type ReactNode } from "react";
 
 const buttonClass =
-  "grid size-8 place-items-center rounded-full text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40";
-const activeButtonClass = "!bg-white !text-slate-950";
+  "grid size-8 place-items-center rounded-full text-foreground transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40";
+const activeButtonClass = "!bg-[#1e73be] !text-white";
 
 export type WordTool = {
   key: string;
@@ -37,7 +37,7 @@ export function WordToolbar({
       style={{ top, left }}
     >
       <div
-        className="toolbar-pop pointer-events-auto flex items-center gap-1 rounded-full bg-[#262625] p-1.5 shadow-xl shadow-black/60"
+        className="toolbar-pop pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1.5 shadow-xl shadow-black/20"
         onMouseDown={(event) => {
           const target = event.target as HTMLElement;
           // Allow focus/paste in form fields (e.g. custom hex color).
@@ -61,7 +61,7 @@ export function WordToolbar({
         ))}
         {extra ? (
           <Fragment>
-            <span className="mx-1 h-6 w-px bg-white/10" />
+            <span className="mx-1 h-6 w-px bg-border" />
             {extra}
           </Fragment>
         ) : null}

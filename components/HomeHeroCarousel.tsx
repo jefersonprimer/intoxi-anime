@@ -3,12 +3,21 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PostAuthor } from "@/components/PostAuthor";
 import { formatPostDate, getPostPath, type Post } from "@/lib/post-utils";
 
+const SWIPE_THRESHOLD_PX = 40;
+const SWIPE_MEDIA_QUERY = "(max-width: 767px)";
+
+function isSwipeViewport() {
+  return window.matchMedia(SWIPE_MEDIA_QUERY).matches;
+}
+
 export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
   const activePost = posts[activeIndex];
 
   useEffect(() => {
@@ -33,12 +42,58 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
     );
   }
 
+  function handleTouchStart(event: React.TouchEvent) {
+    if (posts.length < 2 || !isSwipeViewport()) {
+      return;
+    }
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  }
+
+  function handleTouchEnd(event: React.TouchEvent) {
+    if (
+      posts.length < 2 ||
+      touchStartX.current === null ||
+      !isSwipeViewport()
+    ) {
+      touchStartX.current = null;
+      return;
+    }
+
+    const endX = event.changedTouches[0]?.clientX;
+    if (endX === undefined) {
+      touchStartX.current = null;
+      return;
+    }
+
+    const deltaX = endX - touchStartX.current;
+    touchStartX.current = null;
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) {
+      return;
+    }
+
+    suppressClickRef.current = true;
+    move(deltaX < 0 ? 1 : -1);
+  }
+
+  function handleLinkClick(event: React.MouseEvent) {
+    if (suppressClickRef.current) {
+      event.preventDefault();
+      suppressClickRef.current = false;
+    }
+  }
+
   return (
     <section>
       <div className="mx-auto max-w-7xl">
-        <div className="relative">
+        <div
+          className="relative touch-pan-y md:touch-auto"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <Link
             href={getPostPath(activePost)}
+            onClick={handleLinkClick}
             className="relative block aspect-video overflow-hidden cursor-pointer group sm:rounded-xl lg:rounded-2xl"
           >
             {activePost.bannerImageUrl ? (
@@ -60,7 +115,7 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
               <button
                 type="button"
                 onClick={() => move(-1)}
-                className="group absolute inset-y-0 left-0 z-10 flex w-16 items-center justify-center focus:outline-none sm:w-24"
+                className="group absolute inset-y-0 left-0 z-10 hidden w-24 items-center justify-center focus:outline-none md:flex"
                 aria-label="Post anterior"
               >
                 <ChevronLeft
@@ -71,7 +126,7 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
               <button
                 type="button"
                 onClick={() => move(1)}
-                className="group absolute inset-y-0 right-0 z-10 flex w-16 items-center justify-center focus:outline-none sm:w-24"
+                className="group absolute inset-y-0 right-0 z-10 hidden w-24 items-center justify-center focus:outline-none md:flex"
                 aria-label="Proximo post"
               >
                 <ChevronRight
@@ -87,16 +142,18 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
           href={getPostPath(activePost)}
           className="block mt-2 px-4 sm:px-0"
         >
-          <span className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-[#1E1E1E] bg-[#1e73be] rounded-xl">
+          <span className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-category-fg bg-[#1e73be] rounded-full hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border">
             {activePost.category}
           </span>
-          <h1 className="mt-2 text-xl font-black leading-tight text-white transition hover:text-sky-300 sm:text-3xl lg:text-4xl">
+          <h1 className="mt-2 text-xl font-black leading-tight text-foreground transition hover:text-link-hover sm:text-3xl lg:text-4xl">
             {activePost.title}
           </h1>
         </Link>
-        <div className="mt-4  px-4 sm:px-0 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-normal text-[#a0a0a0]">
+        <div className="mt-4 px-4 sm:px-0 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-normal text-muted">
           <PostAuthor author={activePost.author} />
-          <span>{formatPostDate(activePost.createdAt)}</span>
+          <span className="uppercase">
+            {formatPostDate(activePost.createdAt)}
+          </span>
         </div>
 
         {posts.length > 1 ? (
@@ -110,7 +167,7 @@ export function HomeHeroCarousel({ posts }: { posts: Post[] }) {
                 className={
                   index === activeIndex
                     ? "h-2 w-6 rounded-full bg-sky-400"
-                    : "h-2 w-2 rounded-full bg-white/25 transition hover:bg-white/50"
+                    : "h-2 w-2 rounded-full bg-foreground/25 transition hover:bg-foreground/50"
                 }
               />
             ))}

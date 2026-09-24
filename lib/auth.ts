@@ -6,7 +6,20 @@ import { getClient } from "@/lib/db";
 const SESSION_COOKIE = "intoxi_session";
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
-export type UserRole = "admin" | "user";
+export type UserRole = "admin" | "writer" | "user";
+
+export function isWriterEmail(email: string): boolean {
+  const normalized = email.trim().toLowerCase();
+  return (process.env.WRITER_EMAILS ?? "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(normalized);
+}
+
+export function isAuthorRole(role: UserRole | null | undefined): boolean {
+  return role === "admin" || role === "writer";
+}
 
 export type SessionUser = {
   id: string;
@@ -14,6 +27,13 @@ export type SessionUser = {
   role: UserRole;
   name: string | null;
   avatarUrl: string | null;
+  bio: string | null;
+  xUrl: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
+  tiktokUrl: string | null;
+  websiteUrl: string | null;
 };
 
 type DbUserRow = {
@@ -23,6 +43,13 @@ type DbUserRow = {
   role: UserRole;
   name: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  x_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
+  website_url: string | null;
 };
 
 function mapUser(row: Omit<DbUserRow, "password_hash"> | DbUserRow): SessionUser {
@@ -32,6 +59,13 @@ function mapUser(row: Omit<DbUserRow, "password_hash"> | DbUserRow): SessionUser
     role: row.role,
     name: row.name,
     avatarUrl: row.avatar_url,
+    bio: row.bio,
+    xUrl: row.x_url,
+    instagramUrl: row.instagram_url,
+    facebookUrl: row.facebook_url,
+    youtubeUrl: row.youtube_url,
+    tiktokUrl: row.tiktok_url,
+    websiteUrl: row.website_url,
   };
 }
 
@@ -58,7 +92,7 @@ export function verifyPassword(password: string, storedHash: string) {
 export async function findUserByEmail(email: string) {
   const sql = getClient();
   const rows = await sql<DbUserRow[]>`
-    SELECT id, email, password_hash, role, name, avatar_url
+    SELECT id, email, password_hash, role, name, avatar_url, bio, x_url, instagram_url, facebook_url, youtube_url, tiktok_url, website_url
     FROM users
     WHERE email = ${email}
     LIMIT 1
@@ -98,8 +132,8 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
 
   try {
     const sql = getClient();
-    const rows = await sql<{ id: string; email: string; role: UserRole; name: string | null; avatar_url: string | null }[]>`
-      SELECT u.id, u.email, u.role, u.name, u.avatar_url
+    const rows = await sql<{ id: string; email: string; role: UserRole; name: string | null; avatar_url: string | null; bio: string | null; x_url: string | null; instagram_url: string | null; facebook_url: string | null; youtube_url: string | null; tiktok_url: string | null; website_url: string | null }[]>`
+      SELECT u.id, u.email, u.role, u.name, u.avatar_url, u.bio, u.x_url, u.instagram_url, u.facebook_url, u.youtube_url, u.tiktok_url, u.website_url
       FROM sessions s
       JOIN users u ON u.id = s.user_id
       WHERE s.token = ${token}
@@ -131,14 +165,33 @@ export async function destroySession() {
 
 export async function updateUserProfile(
   userId: string,
-  input: { name: string | null; avatarUrl: string | null },
+  input: {
+    name: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+    xUrl: string | null;
+    instagramUrl: string | null;
+    facebookUrl: string | null;
+    youtubeUrl: string | null;
+    tiktokUrl: string | null;
+    websiteUrl: string | null;
+  },
 ) {
   const sql = getClient();
-  const rows = await sql<{ id: string; name: string | null; avatar_url: string | null }[]>`
+  const rows = await sql<{ id: string; name: string | null; avatar_url: string | null; bio: string | null; x_url: string | null; instagram_url: string | null; facebook_url: string | null; youtube_url: string | null; tiktok_url: string | null; website_url: string | null }[]>`
     UPDATE users
-    SET name = ${input.name}, avatar_url = ${input.avatarUrl}
+    SET
+      name = ${input.name},
+      avatar_url = ${input.avatarUrl},
+      bio = ${input.bio},
+      x_url = ${input.xUrl},
+      instagram_url = ${input.instagramUrl},
+      facebook_url = ${input.facebookUrl},
+      youtube_url = ${input.youtubeUrl},
+      tiktok_url = ${input.tiktokUrl},
+      website_url = ${input.websiteUrl}
     WHERE id = ${userId}
-    RETURNING id, name, avatar_url
+    RETURNING id, name, avatar_url, bio, x_url, instagram_url, facebook_url, youtube_url, tiktok_url, website_url
   `;
 
   return rows[0] ?? null;

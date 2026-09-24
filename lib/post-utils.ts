@@ -27,7 +27,47 @@ export function isSearchSortOption(value: string): value is SearchSortOption {
 export type Author = {
   name: string;
   avatarUrl: string | null;
+  bio: string | null;
+  xUrl: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
+  tiktokUrl: string | null;
+  websiteUrl: string | null;
 };
+
+export const AUTHOR_LINK_FIELDS = [
+  "xUrl",
+  "instagramUrl",
+  "facebookUrl",
+  "youtubeUrl",
+  "tiktokUrl",
+  "websiteUrl",
+] as const;
+
+export type AuthorLinkField = (typeof AUTHOR_LINK_FIELDS)[number];
+
+export function emptyAuthorLinks(): Pick<Author, AuthorLinkField> {
+  return {
+    xUrl: null,
+    instagramUrl: null,
+    facebookUrl: null,
+    youtubeUrl: null,
+    tiktokUrl: null,
+    websiteUrl: null,
+  };
+}
+
+export function hasAuthorLinks(author: Pick<Author, AuthorLinkField> | null) {
+  if (!author) {
+    return false;
+  }
+  return AUTHOR_LINK_FIELDS.some((field) => Boolean(author[field]?.trim()));
+}
+
+export function hasAuthorBio(author: Author | null | undefined) {
+  return Boolean(author?.bio?.trim());
+}
 
 export type Post = {
   id: string;
@@ -80,6 +120,18 @@ export function formatPostDate(value: string) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(value));
+}
+
+export const FALLBACK_AUTHOR_NAME = "Equipe Intoxi Anime";
+
+export function authorToSlug(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 export function categoryToSlug(category: string): string {

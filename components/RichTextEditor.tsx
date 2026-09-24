@@ -565,7 +565,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-72  border-white/10 px-4 py-4 text-slate-100 outline-none",
+          "min-h-72 px-4 py-4 text-foreground outline-none",
       },
     },
     onUpdate({ editor }) {
@@ -1319,7 +1319,7 @@ export function RichTextEditor({
                 }
                 aria-expanded={menuOpen}
                 title="Ferramentas de formatacao"
-                className="toolbar-pop pointer-events-auto absolute grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white p-1.5 text-white transition hover:border-[#f2f2f2] hover:text-[#f2f2f2]"
+                className="toolbar-pop pointer-events-auto absolute grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-foreground p-1.5 text-foreground transition hover:border-[#1e73be] hover:text-[#1e73be]"
               >
                 <Plus
                   size={24}
@@ -1338,7 +1338,7 @@ export function RichTextEditor({
                   {toolGroups.map((group, groupIndex) => (
                     <Fragment key={groupIndex}>
                       {groupIndex > 0 ? (
-                        <span className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
+                        <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
                       ) : null}
                       {group.length > 0
                         ? group.map((tool) => (
@@ -1363,13 +1363,13 @@ export function RichTextEditor({
 
               {layoutSubmenu ? (
                 <div
-                  className="toolbar-pop pointer-events-auto absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-white/10 bg-[#262625] p-3 shadow-xl shadow-black/60"
+                  className="toolbar-pop pointer-events-auto absolute left-0 top-full z-50 mt-3 w-56 rounded-2xl border border-border bg-surface p-3 shadow-xl shadow-black/20"
                   onMouseDown={(event) => event.preventDefault()}
                 >
-                  <p className="mb-2 text-[11px] font-black uppercase tracking-[0.15em] text-sky-300">
+                  <p className="mb-2 text-[11px] font-black uppercase tracking-[0.15em] text-[#1e73be]">
                     {layoutSubmenu === "columns" ? "Colunas" : "Tabela"}
                   </p>
-                  <p className="-mt-1 mb-2 text-[11px] text-slate-400">
+                  <p className="-mt-1 mb-2 text-[11px] text-muted">
                     {layoutSubmenu === "columns"
                       ? "Divide a largura do post lado a lado"
                       : "Com divisao de linhas"}
@@ -1393,7 +1393,7 @@ export function RichTextEditor({
                             ? insertColumns(count)
                             : insertTable(count)
                         }
-                        className="flex h-14 flex-col items-stretch justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-white transition hover:border-sky-300/60 hover:bg-sky-400 hover:text-slate-950"
+                        className="flex h-14 flex-col items-stretch justify-center gap-1.5 rounded-lg border border-border bg-surface-muted px-2 py-2 text-foreground transition hover:border-[#1e73be] hover:bg-[#1e73be] hover:text-white"
                       >
                         {layoutSubmenu === "columns" ? (
                           <>
@@ -1464,7 +1464,7 @@ export function RichTextEditor({
 
                 {colorMenuOpen ? (
                   <div
-                    className="toolbar-pop absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 rounded-2xl border border-white/10 bg-[#262625] p-2 shadow-xl shadow-black/60"
+                    className="toolbar-pop absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 rounded-2xl border border-border bg-surface p-2 shadow-xl shadow-black/20"
                     onMouseDown={(event) => {
                       const target = event.target as HTMLElement;
                       if (target.closest("input, textarea, select")) {
@@ -1479,9 +1479,9 @@ export function RichTextEditor({
                         title="Sem cor (padrao)"
                         aria-label="Sem cor (padrao)"
                         onClick={() => applyTextColor("")}
-                        className="relative grid size-7 place-items-center rounded-full border border-white/20 bg-white/10 transition hover:scale-110"
+                        className="relative grid size-7 place-items-center rounded-full border border-border bg-surface-muted transition hover:scale-110"
                       >
-                        <span className="absolute h-[2px] w-4 rotate-45 rounded bg-white/80" />
+                        <span className="absolute h-[2px] w-4 rotate-45 rounded bg-foreground/80" />
                       </button>
                       {textColorSwatches.map((swatch) => (
                         <button
@@ -1490,13 +1490,13 @@ export function RichTextEditor({
                           title={swatch.name}
                           aria-label={swatch.name}
                           onClick={() => applyTextColor(swatch.value)}
-                          className="size-7 rounded-full border border-white/20 transition hover:scale-110"
+                          className="size-7 rounded-full border border-border transition hover:scale-110"
                           style={{ background: swatch.value }}
                         />
                       ))}
                     </div>
 
-                    <div className="mt-2 flex items-center gap-1.5 border-t border-white/10 pt-2">
+                    <div className="mt-2 flex items-center gap-1.5 border-t border-border pt-2">
                       <input
                         type="text"
                         value={customColor}
@@ -1519,7 +1519,7 @@ export function RichTextEditor({
                         spellCheck={false}
                         autoComplete="off"
                         aria-label="Cor personalizada em hexadecimal"
-                        className="h-7 min-w-0 flex-1 rounded-md border border-white/10 bg-slate-950/70 px-2 text-xs text-white outline-none placeholder:text-slate-500 focus:border-sky-300"
+                        className="h-7 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-xs text-foreground outline-none placeholder:text-muted focus:border-[#1e73be]"
                       />
                       <button
                         type="button"
@@ -1531,7 +1531,7 @@ export function RichTextEditor({
                           }
                         }}
                         disabled={!normalizeHex(customColor)}
-                        className="h-7 rounded-md px-2.5 text-xs font-black text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="h-7 rounded-md px-2.5 text-xs font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
                         style={{
                           background:
                             normalizeHex(customColor) || "#9ca3af",

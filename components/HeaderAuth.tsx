@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { UserModal } from "@/components/UserModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type HeaderAuthProps = {
   user: SessionUser | null;
@@ -48,21 +49,21 @@ export function HeaderAuth({ user }: HeaderAuthProps) {
           aria-expanded={open}
           aria-haspopup="menu"
           title="Conta"
-          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#434343] text-white transition hover:bg-slate-700"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-header-muted transition hover:text-header-fg"
         >
-          <User size={20} aria-hidden="true" />
+          <User size={24} aria-hidden="true" />
         </button>
 
         {open ? (
           <div
             role="menu"
-            className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#252525] p-2 shadow-xl shadow-black/50"
+            className="absolute right-0 top-full z-10 mt-2 w-56 overflow-hidden rounded-xl border border-header-border bg-header-bg p-2 shadow-xl shadow-black/20"
           >
             <Link
               href="/login"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-slate-200 transition hover:bg-white/10 hover:text-white"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-normal text-header-fg transition hover:bg-header-border"
             >
               Entrar
             </Link>
@@ -70,10 +71,13 @@ export function HeaderAuth({ user }: HeaderAuthProps) {
               href="/signup"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-sky-200 transition hover:bg-sky-400/20"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-normal text-header-fg transition hover:bg-header-border"
             >
               Criar conta
             </Link>
+            <div className="border-t border-header-border sm:hidden">
+              <ThemeToggle showLabel />
+            </div>
           </div>
         ) : null}
       </div>

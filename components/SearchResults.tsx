@@ -223,13 +223,13 @@ export function SearchResults({
       />
 
       {error ? (
-        <div className="mt-8 rounded-lg border border-red-300/30 bg-red-400/10 p-8 text-red-100">
+        <div className="mt-8 rounded-lg border border-red-500/40 bg-red-500/10 p-8 text-red-500">
           {error}
         </div>
       ) : null}
 
       {!initialLoading && !error && posts.length === 0 ? (
-        <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.035] p-8 text-slate-300">
+        <div className="mt-8 rounded-lg border border-border bg-surface-muted p-8 text-muted">
           {emptyMessage}
         </div>
       ) : null}

@@ -1,19 +1,16 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { categoryToSlug, getPostPath, type Post } from "@/lib/post-utils";
 
 type HeaderMenuProps = {
-  years: number[];
   guides?: Post[];
   categories?: string[];
 };
 
 export function HeaderMenu({
-  years,
   guides = [],
   categories = [],
 }: HeaderMenuProps) {
@@ -47,7 +44,7 @@ export function HeaderMenu({
         aria-label="Abrir menu de navegacao"
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-zinc-200 transition hover:text-white md:hidden"
+        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-header-muted transition hover:text-header-fg md:hidden"
       >
         {open ? (
           <X size={24} aria-hidden="true" />
@@ -67,13 +64,13 @@ export function HeaderMenu({
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 left-0 flex w-72 h-140 flex-col overflow-y-auto border-r border-white/10 bg-[#1E1E1E] shadow-2xl shadow-black/60">
+          <div className="absolute inset-y-0 left-0 flex h-140 w-72 flex-col overflow-y-auto border-r border-header-border bg-header-bg shadow-2xl shadow-black/40">
             <div className="flex items-start justify-end">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Fechar menu"
-                className="inline-flex p-4 items-center justify-center rounded-md text-zinc-200 transition hover:text-white"
+                className="inline-flex items-center justify-center rounded-md p-4 text-header-muted transition hover:text-header-fg"
               >
                 <X size={24} aria-hidden="true" />
               </button>
@@ -82,7 +79,7 @@ export function HeaderMenu({
             <nav className="flex-1 p-3">
               {categories.length > 0 ? (
                 <>
-                  <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted">
                     Categorias
                   </p>
                   <ul className="space-y-0.5">
@@ -91,7 +88,7 @@ export function HeaderMenu({
                         <Link
                           href={`/${categoryToSlug(category)}`}
                           onClick={() => setOpen(false)}
-                          className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-zinc-200 transition hover:bg-white/10 hover:text-white"
+                          className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-header-muted transition hover:bg-surface-muted hover:text-header-fg"
                         >
                           {category}
                         </Link>
@@ -101,9 +98,16 @@ export function HeaderMenu({
                 </>
               ) : null}
 
-              <p className="mt-4 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+              <p className="mt-4 px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted">
                 Guias de Temporada
               </p>
+              <Link
+                href="/guias-temporada"
+                onClick={() => setOpen(false)}
+                className="block w-full rounded-md px-3 py-2 text-sm font-bold text-header-fg transition hover:bg-surface-muted"
+              >
+                Ver todos os guias
+              </Link>
               {recentGuides.length > 0 ? (
                 <ul className="space-y-0.5">
                   {recentGuides.map((guide) => (
@@ -111,7 +115,7 @@ export function HeaderMenu({
                       <Link
                         href={getPostPath(guide)}
                         onClick={() => setOpen(false)}
-                        className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-zinc-200 transition hover:bg-white/10 hover:text-white"
+                        className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-header-muted transition hover:bg-surface-muted hover:text-header-fg"
                         title={guide.title}
                       >
                         {guide.title}
@@ -120,7 +124,7 @@ export function HeaderMenu({
                   ))}
                 </ul>
               ) : (
-                <p className="px-3 py-2 text-sm text-zinc-500">
+                <p className="px-3 py-2 text-sm text-muted">
                   Nenhum guia disponivel.
                 </p>
               )}

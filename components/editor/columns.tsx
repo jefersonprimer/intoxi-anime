@@ -12,7 +12,7 @@ import { TextSelection } from "@tiptap/pm/state";
 import { blockColorSwatches } from "./palette";
 
 const roundControlClass =
-  "grid size-6 place-items-center rounded-full border border-white/25 bg-[#262625] text-white shadow-md shadow-black/30 transition hover:scale-110 hover:text-sky-300 disabled:cursor-not-allowed disabled:opacity-30";
+  "grid size-6 place-items-center rounded-full border border-border bg-surface text-foreground shadow-md shadow-black/20 transition hover:scale-110 hover:text-[#1e73be] disabled:cursor-not-allowed disabled:opacity-30";
 
 function insertColumnAfter(editor: Editor, columnsPos: number, columnsNode: PMNode) {
   const schema = editor.schema;

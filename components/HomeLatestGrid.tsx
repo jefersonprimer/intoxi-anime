@@ -41,21 +41,25 @@ export function HomeLatestGrid({ posts }: HomeLatestGridProps) {
             <div className="mt-2 flex flex-col gap-2 px-4 sm:px-0 ">
               {/* 2. Categoria abaixo da imagem */}
               <div>
-                <span className="inline-block w-fit rounded-xl bg-[#1e73be] px-2 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#1E1E1E]">
+                <span className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-category-fg bg-[#1e73be] rounded-full hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border">
                   {mainPost.category}
                 </span>
               </div>
               {/* 3. Título abaixo da categoria */}
-              <h2 className="text-xl font-black leading-snug text-white transition group-hover:text-sky-300 sm:text-2xl">
+              <h2 className="text-xl font-black leading-snug text-foreground transition group-hover:text-link-hover sm:text-2xl">
                 {mainPost.title}
               </h2>
               {/* 4. Data abaixo do título */}
-              <div className="flex flex-col gap-2">
-                <p className="shrink-0 text-xs font-normal text-[#a0a0a0]">
+              <div className="flex flex-col gap-2 text-muted">
+                <p className="shrink-0 text-xs font-normal uppercase">
                   {formatPostDate(mainPost.createdAt)}
                 </p>
 
-                <PostAuthor author={mainPost.author} className="min-w-0" />
+                <PostAuthor
+                  author={mainPost.author}
+                  className="min-w-0"
+                  link={false}
+                />
               </div>
             </div>
           </Link>
@@ -87,21 +91,25 @@ export function HomeLatestGrid({ posts }: HomeLatestGridProps) {
                 <div className="mt-2 flex flex-col gap-1.5  px-4 sm:px-0">
                   {/* 2. Categoria abaixo da imagem */}
                   <div>
-                    <span className="inline-block w-fit rounded-xl bg-[#1e73be] px-2 py-0.5 text-xs font-bold uppercase text-[#1E1E1E]">
+                    <span className="inline-block w-fit rounded-xl bg-[#1e73be] px-2 py-0.5 text-xs font-bold uppercase text-category-fg">
                       {post.category}
                     </span>
                   </div>
                   {/* 3. Título abaixo da categoria */}
-                  <h3 className="line-clamp-2 text-sm font-black leading-snug text-white transition group-hover:text-sky-300 sm:text-base">
+                  <h3 className="line-clamp-2 text-sm font-black leading-snug text-foreground transition group-hover:text-link-hover sm:text-base">
                     {post.title}
                   </h3>
                   {/* 4. Data abaixo do título */}
-                  <div className="flex flex-col gap-2">
-                    <p className="shrink-0 text-xs font-normal text-[#a0a0a0]">
+                  <div className="flex flex-col gap-2 text-muted">
+                    <p className="shrink-0 text-xs font-normal">
                       {formatPostDate(post.createdAt)}
                     </p>
 
-                    <PostAuthor author={post.author} className="min-w-0" />
+                    <PostAuthor
+                      author={post.author}
+                      className="min-w-0"
+                      link={false}
+                    />
                   </div>
                 </div>
               </Link>

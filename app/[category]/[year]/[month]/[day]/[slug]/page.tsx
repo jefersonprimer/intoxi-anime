@@ -5,7 +5,7 @@ import { AdminPostActions } from "@/components/AdminPostActions";
 import { HomePostSidebar } from "@/components/HomePostSidebar";
 import { PostAuthor } from "@/components/PostAuthor";
 import { TwitterWidgets } from "@/components/TwitterWidgets";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isAuthorRole } from "@/lib/auth";
 import {
   categoryToSlug,
   formatPostDate,
@@ -80,7 +80,7 @@ export default async function PostPage({
 }) {
   const post = await resolvePost(await params);
   const user = await getSessionUser();
-  const isAdmin = user?.role === "admin";
+  const canManage = isAuthorRole(user?.role);
   const allPosts = await getPosts();
   const relatedLimit = 4;
   const categorySlug = categoryToSlug(post.category);
@@ -108,18 +108,18 @@ export default async function PostPage({
     .slice(0, relatedLimit);
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E] px-4 xl:px-0">
+    <div className="min-h-screen bg-background px-4 xl:px-0">
       <main>
-        <div className="mx-auto grid max-w-7xl gap-8 pt-12 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-7xl gap-4 xl:gap-8 pt-12 lg:grid-cols-3">
           <article className="min-w-0 lg:col-span-2">
             <section>
               <div>
                 <nav aria-label="Breadcrumb" className="mb-4">
-                  <ol className="flex items-center gap-2 text-sm font-normal text-white">
+                  <ol className="flex items-center gap-2 text-sm font-normal text-foreground">
                     <li>
                       <Link
                         href="/"
-                        className="transition hover:text-[#f2f2f2] hover:underline"
+                        className="transition hover:text-link-hover hover:underline"
                       >
                         Home
                       </Link>
@@ -130,7 +130,7 @@ export default async function PostPage({
                     <li>
                       <Link
                         href={`/${categoryToSlug(post.category)}`}
-                        className="transition hover:text-[#f2f2f2] hover:underline"
+                        className="transition hover:text-link-hover hover:underline"
                       >
                         {post.category}
                       </Link>
@@ -140,32 +140,32 @@ export default async function PostPage({
 
                 <Link
                   href={`/${categoryToSlug(post.category)}`}
-                  className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-[#1E1E1E] bg-[#1e73be] rounded-2xl hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border"
+                  className="inline-block w-fit text-xs font-bold px-2 py-1 uppercase tracking-[0.2em] text-category-fg bg-[#1e73be] rounded-2xl hover:bg-transparent hover:text-[#1e73be] hover:border-[#1e73be] border"
                 >
                   {post.category}
                 </Link>
-                <h1 className="mt-4 text-2xl font-bold leading-tight text-white md:text-4xl">
+                <h1 className="mt-4 text-2xl font-bold leading-tight text-foreground md:text-4xl">
                   {post.title}
                 </h1>
                 {post.summary ? (
-                  <p className="mt-5 text-lg leading-8 text-slate-200">
+                  <p className="mt-5 text-lg leading-8 text-muted">
                     {post.summary}
                   </p>
                 ) : null}
                 <div className="mt-6 flex flex-wrap items-center whitespace-nowrap gap-x-4 gap-y-2">
                   <PostAuthor author={post.author} size="md" />
 
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-[#a0a0a0] font-normal">
+                  <div className="flex items-center justify-center gap-2 text-muted">
+                    <span className="font-normal">
                       {post.readingTimeMinutes} min de leitura
                     </span>
 
                     <span
                       aria-hidden="true"
-                      className="h-1 w-1 rounded-full bg-[#a0a0a0]"
+                      className="h-1 w-1 rounded-full bg-muted"
                     />
 
-                    <span className="text-[#a0a0a0] font-normal">
+                    <span className="font-normal">
                       {formatPostDate(post.createdAt)}
                     </span>
                   </div>
@@ -176,7 +176,7 @@ export default async function PostPage({
                       <li key={tag.toLowerCase()}>
                         <Link
                           href={`/buscar?q=${encodeURIComponent(tag)}`}
-                          className="inline-block rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-slate-300 transition hover:border-[#1e73be] hover:text-white"
+                          className="inline-block rounded-full hover:bg-[#1e73be] px-2.5 py-1 text-xs font-semibold transition text-[#1e73be] hover:text-foreground"
                         >
                           {tag}
                         </Link>
@@ -184,7 +184,7 @@ export default async function PostPage({
                     ))}
                   </ul>
                 ) : null}
-                {isAdmin ? (
+                {canManage ? (
                   <div className="mt-6">
                     <AdminPostActions postId={post.id} postSlug={post.slug} />
                   </div>

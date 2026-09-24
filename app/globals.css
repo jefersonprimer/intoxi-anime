@@ -1,13 +1,49 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="dark"] {
   --background: #1e1e1e;
   --foreground: #f8fafc;
+  --muted: #a0a0a0;
+  --border: rgba(255, 255, 255, 0.1);
+  --surface: #252525;
+  --surface-muted: rgba(255, 255, 255, 0.1);
+  --link-hover: #7dd3fc;
+  --header-bg: #1e1e1e;
+  --header-fg: #ffffff;
+  --header-muted: #d4d4d8;
+  --header-border: rgba(255, 255, 255, 0.12);
+  --category-fg: #1e1e1e;
+}
+
+[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: rgba(15, 23, 42, 0.12);
+  --surface: #ffffff;
+  --surface-muted: rgba(15, 23, 42, 0.08);
+  --link-hover: #0369a1;
+  --header-bg: #ffffff;
+  --header-fg: #0f172a;
+  --header-muted: #3f3f46;
+  --header-border: rgba(15, 23, 42, 0.12);
+  --category-fg: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-link-hover: var(--link-hover);
+  --color-header-bg: var(--header-bg);
+  --color-header-fg: var(--header-fg);
+  --color-header-muted: var(--header-muted);
+  --color-header-border: var(--header-border);
+  --color-category-fg: var(--category-fg);
   --font-sans: Arial, Helvetica, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
@@ -22,13 +58,48 @@ button {
   cursor: pointer;
 }
 
+.logo-theme-dark {
+  display: block;
+}
+
+.logo-theme-light {
+  display: none;
+}
+
+[data-theme="light"] .logo-theme-dark {
+  display: none;
+}
+
+[data-theme="light"] .logo-theme-light {
+  display: block;
+}
+
+.footer-logo {
+  filter: brightness(0) invert(1);
+}
+
+[data-theme="light"] .footer-logo {
+  filter: brightness(0);
+}
+
+.header-border-grooves {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  background: #1e73be;
+}
+
 ::selection {
   background: #1e73be;
   color: #ffffff;
 }
 
+.editor-content {
+  color: var(--foreground);
+}
+
 .editor-content p.is-editor-empty:first-child::before {
-  color: #b3b3b1;
+  color: var(--muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -36,7 +107,7 @@ button {
 }
 
 .post-content {
-  color: #dbeafe;
+  color: var(--foreground);
   font-size: 22px;
   line-height: 1.5;
   overflow: hidden;
@@ -78,7 +149,7 @@ button {
 }
 
 .post-content a {
-  color: #7dd3fc;
+  color: var(--link-hover);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -175,7 +246,7 @@ button {
 }
 
 .post-content .twitter-tweet > a {
-  color: #7dd3fc;
+  color: var(--link-hover);
   word-break: break-all;
 }
 
@@ -237,14 +308,14 @@ button {
   margin: 0;
   font-size: 0.82em;
   line-height: 1.45;
-  color: #dbeafe;
+  color: var(--foreground);
 }
 
 .editor-content table.tiptap-table td,
 .editor-content table.tiptap-table th,
 .post-content table td,
 .post-content table th {
-  border: 1px solid var(--accent, rgba(255, 255, 255, 0.16));
+  border: 1px solid var(--accent, var(--border));
   padding: 0.6rem 0.75rem;
   vertical-align: top;
   word-wrap: break-word;
@@ -261,7 +332,7 @@ button {
 /* Cabeçalho sem cor: texto acompanha o corpo da tabela */
 .editor-content table.tiptap-table[style*="--th-bg: transparent"] th,
 .post-content table[style*="--th-bg: transparent"] th {
-  color: #dbeafe;
+  color: var(--foreground);
   font-weight: 800;
 }
 
@@ -319,10 +390,10 @@ button {
   height: 24px;
   place-items: center;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: #262625;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition:
     transform 0.12s ease,
     color 0.12s ease,
@@ -331,7 +402,7 @@ button {
 
 .tbl-btn:hover:not(:disabled) {
   transform: scale(1.12);
-  color: #7dd3fc;
+  color: var(--link-hover);
 }
 
 .tbl-btn:disabled {
@@ -340,8 +411,8 @@ button {
 }
 
 .tbl-btn.is-active {
-  background: #38bdf8;
-  color: #020617;
+  background: #1e73be;
+  color: #ffffff;
 }
 
 .tbl-count {
@@ -349,7 +420,7 @@ button {
   text-align: center;
   font-size: 11px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
 }
 
 /* Menu de cores da tabela */
@@ -362,9 +433,9 @@ button {
   width: 176px;
   padding: 8px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #262625;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
   z-index: 50;
 }
 
@@ -379,7 +450,7 @@ button {
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7dd3fc;
+  color: #1e73be;
 }
 
 .tbl-color-targets {
@@ -412,13 +483,13 @@ button {
 
 .tbl-color-swatches {
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 
 .tbl-color-swatch {
   aspect-ratio: 1;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--border);
   transition: transform 0.12s ease;
 }
 
@@ -431,14 +502,15 @@ button {
   place-items: center;
   aspect-ratio: 1;
   border-radius: 9999px;
-  border: 1px dashed rgba(255, 255, 255, 0.45);
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  background: var(--surface-muted);
   transition: background-color 0.12s ease;
 }
 
 .tbl-color-none:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--surface-muted);
+  color: var(--foreground);
 }
 
 /* ---------- Colunas (editor + post publicado) ---------- */
@@ -461,7 +533,7 @@ button {
 .post-content
   [data-column]:not(.column-node)
   + [data-column]:not(.column-node) {
-  border-left: 1px solid var(--col-border, rgba(255, 255, 255, 0.18));
+  border-left: 1px solid var(--col-border, var(--border));
   padding-left: 0;
 }
 
@@ -552,9 +624,9 @@ button {
   width: 160px;
   padding: 8px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #262625;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
   z-index: 50;
   animation: toolbar-pop 0.15s ease-out;
 }
@@ -562,7 +634,7 @@ button {
 .editor-content .column-color-swatch {
   aspect-ratio: 1;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--border);
   transition: transform 0.12s ease;
 }
 
@@ -575,14 +647,15 @@ button {
   place-items: center;
   aspect-ratio: 1;
   border-radius: 9999px;
-  border: 1px dashed rgba(255, 255, 255, 0.45);
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  background: var(--surface-muted);
   transition: background-color 0.12s ease;
 }
 
 .editor-content .column-color-none:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--surface-muted);
+  color: var(--foreground);
 }
 
 /* Caixa tracejada = so o conteudo */
@@ -594,8 +667,8 @@ button {
   min-height: 5.5rem;
   display: flex;
   flex-direction: column;
-  background-color: var(--col-bg, rgba(255, 255, 255, 0.03));
-  border: 1px dashed rgba(255, 255, 255, 0.28);
+  background-color: var(--col-bg, var(--surface-muted));
+  border: 1px dashed var(--border);
   border-radius: 6px;
   padding: 0.65rem 0.75rem;
   box-sizing: border-box;
@@ -607,8 +680,8 @@ button {
 
 .editor-content .column-node:hover .column-frame,
 .editor-content .column-node:focus-within .column-frame {
-  border-color: rgba(56, 189, 248, 0.55);
-  background-color: var(--col-bg, rgba(56, 189, 248, 0.06));
+  border-color: #1e73be;
+  background-color: var(--col-bg, color-mix(in srgb, #1e73be 8%, transparent));
 }
 
 .editor-content .column-node .col-content {
@@ -691,7 +764,7 @@ button {
   text-align: center;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
   line-height: 1;
 }
 

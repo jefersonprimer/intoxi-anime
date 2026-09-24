@@ -25,7 +25,7 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
   return (
     <section className="mt-8">
       <div className="mb-4">
-        <h2 className="mt-2 text-2xl font-black text-white">
+        <h2 className="mt-2 text-2xl font-black text-foreground">
           Guias de Temporada
         </h2>
       </div>
@@ -37,7 +37,7 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
               type="button"
               onClick={() => scrollByCards(-1)}
               aria-label="Guias anteriores"
-              className="absolute top-1/2 -left-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center  text-white hover:text-[#f2f2f2]  transition "
+              className="absolute top-1/2 -left-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-foreground hover:text-link-hover transition"
             >
               <ChevronLeft size={34} />
             </button>
@@ -45,7 +45,7 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
               type="button"
               onClick={() => scrollByCards(1)}
               aria-label="Proximos guias"
-              className="absolute top-1/2 -right-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center  text-white  hover:text-[#f2f2f2] transition"
+              className="absolute top-1/2 -right-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-foreground hover:text-link-hover transition"
             >
               <ChevronRight size={34} />
             </button>
