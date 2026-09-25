@@ -7,6 +7,9 @@ import { Header } from "@/components/Header";
 export const metadata: Metadata = {
   title: "Intoxi Anime - Tudo sobre animes, tops, light novels",
   description: "Noticias, trailers e guias de temporada sobre animes.",
+  other: {
+    "google-adsense-account": "ca-pub-8339583862253102",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
