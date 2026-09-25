@@ -3,17 +3,13 @@
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { categoryToSlug, getPostPath, type Post } from "@/lib/post-utils";
+import { categoryToSlug } from "@/lib/post-utils";
 
 type HeaderMenuProps = {
-  guides?: Post[];
   categories?: string[];
 };
 
-export function HeaderMenu({
-  guides = [],
-  categories = [],
-}: HeaderMenuProps) {
+export function HeaderMenu({ categories = [] }: HeaderMenuProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -33,8 +29,6 @@ export function HeaderMenu({
       document.body.style.overflow = "";
     };
   }, [open]);
-
-  const recentGuides = guides.slice(0, 5);
 
   return (
     <>
@@ -78,56 +72,20 @@ export function HeaderMenu({
 
             <nav className="flex-1 p-3">
               {categories.length > 0 ? (
-                <>
-                  <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted">
-                    Categorias
-                  </p>
-                  <ul className="space-y-0.5">
-                    {categories.map((category) => (
-                      <li key={category}>
-                        <Link
-                          href={`/${categoryToSlug(category)}`}
-                          onClick={() => setOpen(false)}
-                          className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-header-muted transition hover:bg-surface-muted hover:text-header-fg"
-                        >
-                          {category}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : null}
-
-              <p className="mt-4 px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted">
-                Guias de Temporada
-              </p>
-              <Link
-                href="/guias-temporada"
-                onClick={() => setOpen(false)}
-                className="block w-full rounded-md px-3 py-2 text-sm font-bold text-header-fg transition hover:bg-surface-muted"
-              >
-                Ver todos os guias
-              </Link>
-              {recentGuides.length > 0 ? (
                 <ul className="space-y-0.5">
-                  {recentGuides.map((guide) => (
-                    <li key={guide.id}>
+                  {categories.map((category) => (
+                    <li key={category}>
                       <Link
-                        href={getPostPath(guide)}
+                        href={`/${categoryToSlug(category)}`}
                         onClick={() => setOpen(false)}
                         className="block w-full truncate rounded-md px-3 py-2 text-sm font-normal text-header-muted transition hover:bg-surface-muted hover:text-header-fg"
-                        title={guide.title}
                       >
-                        {guide.title}
+                        {category}
                       </Link>
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className="px-3 py-2 text-sm text-muted">
-                  Nenhum guia disponivel.
-                </p>
-              )}
+              ) : null}
             </nav>
           </div>
         </div>

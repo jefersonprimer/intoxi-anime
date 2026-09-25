@@ -33,7 +33,12 @@ export default async function SearchPage({
             initialSort={sort}
           />
         </section>
-        <HomePostSidebar posts={posts.slice(0, 4)} title="Últimas notícias" />
+        <HomePostSidebar
+          posts={posts.slice(0, 4)}
+          title="Últimas notícias"
+          allPostsLabel="Ver todas as notícias"
+          horizontal
+        />
       </main>
     </div>
   );

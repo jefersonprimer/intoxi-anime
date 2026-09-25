@@ -10,7 +10,7 @@ export function HomeBanner() {
         href={AMAZON_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative flex h-[87px] items-center overflow-hidden sm:rounded bg-gradient-to-r from-black via-[#0e2b18] to-black  transition duration-300 "
+        className="group relative flex h-[87px] items-center overflow-hidden bg-gradient-to-r from-black via-[#0e2b18] to-black  transition duration-300 "
       >
         <Image
           src="/as_conicas_de_arian_banner.png"

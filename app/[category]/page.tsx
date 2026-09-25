@@ -31,7 +31,7 @@ export default async function CategoryPage({
     <div className="min-h-screen bg-background">
       <main className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-3 xl:px-0">
         <section className="min-w-0 lg:col-span-2">
-          <h1 className="mb-8 mt-2 text-4xl font-black text-foreground capitalize">
+          <h1 className="py-5 mb-2 text-2xl md:text-3xl font-medium text-foreground">
             {categoryName}
           </h1>
 
@@ -47,7 +47,12 @@ export default async function CategoryPage({
             </div>
           )}
         </section>
-        <HomePostSidebar posts={allPosts.slice(0, 4)} title="Últimas notícias" />
+        <HomePostSidebar
+          posts={allPosts.slice(0, 4)}
+          title="Últimas notícias"
+          allPostsLabel="Ver todas as notícias"
+          horizontal
+        />
       </main>
     </div>
   );

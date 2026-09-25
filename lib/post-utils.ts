@@ -1,5 +1,8 @@
 export const SEARCH_PAGE_SIZE = 20;
 
+export const SEASON_GUIDES_CATEGORY = "Guias de Temporada";
+export const SEASON_GUIDES_SLUG = categoryToSlug(SEASON_GUIDES_CATEGORY);
+
 export const SEARCH_DATE_FILTERS = [
   { value: "all", label: "Todos" },
   { value: "24h", label: "Ultimas 24 horas" },

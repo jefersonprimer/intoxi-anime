@@ -201,7 +201,12 @@ export default async function PostPage({
             </section>
           </article>
 
-          <HomePostSidebar posts={relatedPosts} title="Artigos Relacionados" />
+          <HomePostSidebar
+            posts={relatedPosts}
+            title="Artigos Relacionados"
+            horizontal
+            allPostsLabel="Ver todos os artigos"
+          />
         </div>
       </main>
     </div>

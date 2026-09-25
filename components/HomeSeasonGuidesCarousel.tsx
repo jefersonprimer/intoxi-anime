@@ -24,14 +24,19 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
 
   return (
     <section className="mt-8">
-      <div className="mb-4">
-        <h2 className="mt-2 text-2xl font-black text-foreground">
+      <div>
+        <h1 className="mb-2 text-2xl md:text-3xl font-medium text-foreground">
           Guias de Temporada
-        </h2>
+        </h1>
+
+        <div
+          aria-hidden="true"
+          className="relative, h-1 overflow-hidden bg-[#1e73be]"
+        />
       </div>
 
       <div className="relative">
-        {posts.length > 3 ? (
+        {posts.length > 4 ? (
           <>
             <button
               type="button"
@@ -60,7 +65,7 @@ export function HomeSeasonGuidesCarousel({ posts }: { posts: Post[] }) {
             <div
               key={post.id}
               data-card
-              className="w-[calc(100%-1.25rem)] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-2.5rem)/3)]"
+              className="w-[calc(100%-1.25rem)] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
             >
               <PostCard post={post} />
             </div>

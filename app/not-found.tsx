@@ -30,7 +30,7 @@ export default function NotFound() {
           </p>
           <Link
             href="/noticias"
-            className="mt-8 inline-flex items-center justify-center rounded-3xl border border-transparent bg-[#1e73be] px-6 py-3 font-semibold text-category-fg shadow-md transition hover:border-foreground hover:bg-[#1862a3] hover:text-foreground hover:shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e73be] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="mt-4 border border-[#1e73be] px-4 py-2 text-center text-base font-bold text-[#1e73be] transition hover:bg-[#1e73be] hover:text-white"
           >
             Ir para notícias
           </Link>

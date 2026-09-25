@@ -44,8 +44,14 @@ function resolveAuthor(
 function authorToSlugMatches(left: string, right: string) {
   return (
     left.trim().toLowerCase() === right.trim().toLowerCase() ||
-    left.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ===
-      right.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    left
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase() ===
+      right
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
   );
 }
 
@@ -108,12 +114,13 @@ export default async function AuthorPage({
                 {name}
               </h1>
               {showBio ? (
-                <p className="mt-3 max-w-2xl rounded-md border border-border bg-surface-muted px-4 py-3 text-[15px] leading-relaxed text-foreground">
+                <p className="mt-3 max-w-2xl rounded-md  bg-surface-muted px-4 py-3 text-[15px] leading-relaxed text-foreground">
                   {author?.bio}
                 </p>
               ) : null}
               <p className="mt-3 text-sm font-normal text-muted">
-                {count} {count === 1 ? "artigo publicado" : "artigos publicados"}
+                {count}{" "}
+                {count === 1 ? "artigo publicado" : "artigos publicados"}
               </p>
               {showLinks ? (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -136,7 +143,11 @@ export default async function AuthorPage({
             </div>
           )}
         </section>
-        <HomePostSidebar posts={allPosts.slice(0, 4)} title="Últimas notícias" />
+        <HomePostSidebar
+          posts={allPosts.slice(0, 4)}
+          title="Últimas notícias"
+          allPostsLabel="Ver todas as notícias"
+        />
       </main>
     </div>
   );

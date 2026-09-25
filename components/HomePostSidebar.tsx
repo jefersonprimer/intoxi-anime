@@ -6,31 +6,52 @@ import { formatPostDate, getPostPath, type Post } from "@/lib/post-utils";
 export function HomePostSidebar({
   posts,
   title = "Destaques",
+  bgClass,
+  horizontal = false,
+  allPostsLabel = "Ver tudo",
 }: {
   posts: Post[];
   title?: string;
+  bgClass?: string;
+  horizontal?: boolean;
+  allPostsLabel?: string;
 }) {
   const orderedPosts = [...posts].sort(
     (a, b) => Number(b.isFeatured) - Number(a.isFeatured),
   );
 
   return (
-    <aside className="sticky gap-8 top-6 flex flex-col self-start rounded-lg  p-5 lg:top-24">
-      <p className="mb-4 text-2xl md:text-4xl font-bold text-foreground">
-        {title}
-      </p>
-      <div className="flex flex-1 flex-col gap-4">
+    <aside className="sticky gap-2 top-6 flex flex-col self-start rounded-lg sm:p-5 lg:top-24">
+      <div>
+        <h1 className="mb-2 text-2xl md:text-3xl font-medium text-foreground">
+          {title}
+        </h1>
+
+        <div
+          aria-hidden="true"
+          className="relative, h-1 overflow-hidden bg-[#1e73be]"
+        />
+      </div>
+      <div className={`flex flex-1 flex-col gap-4 ${bgClass ?? ""}`}>
         {orderedPosts.map((post, index) => (
           <Link
             key={post.id}
             href={getPostPath(post)}
-            className={`group flex gap-4 ${
+            className={`group flex gap-2.5 ${
+              horizontal ? "flex-row items-start" : "flex-col"
+            } ${
               index < orderedPosts.length - 1
                 ? "border-b border-border pb-4"
                 : ""
             }`}
           >
-            <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-md sm:w-40">
+            <div
+              className={`relative overflow-hidden ${
+                horizontal
+                  ? "h-[74px] w-[132px] max-h-[74px] max-w-[132px] shrink-0 self-center"
+                  : "aspect-video w-full"
+              }`}
+            >
               {post.bannerImageUrl ? (
                 <Image
                   src={post.bannerImageUrl}
@@ -59,6 +80,12 @@ export function HomePostSidebar({
           </Link>
         ))}
       </div>
+      <Link
+        href="http://localhost:3001/noticias"
+        className="w-full border border-[#1e73be] px-4 py-2 text-center text-sm font-bold text-[#1e73be] transition hover:bg-[#1e73be] hover:text-white"
+      >
+        {allPostsLabel}
+      </Link>
       <PostSidebarBanner />
     </aside>
   );

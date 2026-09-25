@@ -6,15 +6,16 @@ import { HeaderMenu } from "@/components/HeaderMenu";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSessionUser, isAuthorRole } from "@/lib/auth";
-import { getPostCategories, getSeasonGuidePosts } from "@/lib/posts";
-import { categoryToSlug } from "@/lib/post-utils";
+import { getPostCategories } from "@/lib/posts";
+import {
+  categoryToSlug,
+  SEASON_GUIDES_CATEGORY,
+  SEASON_GUIDES_SLUG,
+} from "@/lib/post-utils";
 
 export async function Header() {
   const user = await getSessionUser();
-  const [seasonGuides, categories] = await Promise.all([
-    getSeasonGuidePosts(),
-    getPostCategories(),
-  ]);
+  const categories = await getPostCategories();
   const navCategories = categories.filter(
     (category) => !categoryToSlug(category).includes("temporada"),
   );
@@ -23,7 +24,7 @@ export async function Header() {
     <header className="sticky top-0 z-40 bg-header-bg">
       <div className=" mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2">
         <div className="flex items-center gap-3 md:gap-4">
-          <HeaderMenu guides={seasonGuides} categories={navCategories} />
+          <HeaderMenu categories={categories} />
           <Link href="/" className="group flex items-center gap-3">
             <Image
               src="/logo-nome.png"
@@ -68,10 +69,10 @@ export async function Header() {
               </Link>
             ))}
             <Link
-              href="/guias-temporada"
+              href={`/${SEASON_GUIDES_SLUG}`}
               className="flex-1 rounded-tl-md rounded-tr-md px-3 py-2 text-center text-sm font-bold text-header-fg transition hover:bg-[#1e73be] hover:text-white"
             >
-              Guias de Temporada
+              {SEASON_GUIDES_CATEGORY}
             </Link>
           </div>
         </nav>

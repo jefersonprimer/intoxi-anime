@@ -470,6 +470,21 @@ export async function getSeasonGuidePosts() {
   return posts.filter(isSeasonGuide);
 }
 
+export function isSpecialArticle(post: Post) {
+  const category = post.category.trim().toLowerCase();
+  const tags = post.tags.map((tag) => tag.toLowerCase());
+  return (
+    category === "especial" ||
+    category.includes("especial") ||
+    tags.includes("especial")
+  );
+}
+
+export async function getSpecialPosts() {
+  const posts = await getPosts();
+  return posts.filter(isSpecialArticle);
+}
+
 export async function getSeasonGuideYears() {
   const guides = await getSeasonGuidePosts();
   return [...new Set(guides.map(getPostYear))].sort((a, b) => b - a);
