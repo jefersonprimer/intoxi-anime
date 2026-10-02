@@ -73,6 +73,34 @@ export const Twitter = Node.create({
 
   addAttributes() {
     return {
+      size: {
+        default: "large",
+        parseHTML: (element) =>
+          element.getAttribute("data-media-size") ?? "large",
+        renderHTML: (attributes) => ({ "data-media-size": attributes.size }),
+      },
+      align: {
+        default: "center",
+        parseHTML: (element) =>
+          element.getAttribute("data-media-align") ?? "center",
+        renderHTML: (attributes) => ({ "data-media-align": attributes.align }),
+      },
+      width: {
+        default: null,
+        parseHTML: (element) => {
+          const value =
+            element.getAttribute("data-media-width") || element.style.width;
+          const match = /^(\d+(?:\.\d+)?)%$/.exec(value.trim());
+          return match ? Number.parseFloat(match[1]) : null;
+        },
+        renderHTML: (attributes) =>
+          attributes.width
+            ? {
+                "data-media-width": `${attributes.width}%`,
+                style: `width: ${attributes.width}%`,
+              }
+            : {},
+      },
       src: {
         default: null,
         parseHTML: (element) => {
@@ -126,6 +154,8 @@ export const Twitter = Node.create({
     const attrs = mergeAttributes(HTMLAttributes, {
       class: "twitter-tweet",
       "data-theme": "dark",
+      "data-media-size": HTMLAttributes["data-media-size"] ?? "large",
+      "data-media-align": HTMLAttributes["data-media-align"] ?? "center",
       "data-twitter-src": src || undefined,
       "data-tweet-id": tweetId || undefined,
     });
@@ -151,6 +181,19 @@ export const Twitter = Node.create({
       dom.className = "twitter-embed-editor";
       dom.contentEditable = "false";
       dom.dataset.twitterSrc = src;
+      const applyMediaLayout = (current: typeof node) => {
+        const presetWidth =
+          current.attrs.size === "small"
+            ? 50
+            : current.attrs.size === "medium"
+              ? 75
+              : 100;
+        const width = current.attrs.width ?? presetWidth;
+        dom.style.width = `${width}%`;
+        dom.dataset.mediaSize = String(current.attrs.size ?? "large");
+        dom.dataset.mediaAlign = String(current.attrs.align ?? "center");
+      };
+      applyMediaLayout(node);
 
       mountTweetPreview(dom, src);
 
@@ -162,6 +205,7 @@ export const Twitter = Node.create({
             return false;
           }
           const nextSrc = String(updatedNode.attrs.src ?? "");
+          applyMediaLayout(updatedNode);
           if (dom.dataset.twitterSrc === nextSrc) {
             return true;
           }

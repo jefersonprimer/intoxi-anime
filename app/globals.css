@@ -256,7 +256,17 @@ button {
 .post-content .twitter-embed-mount {
   display: block;
   margin: 1.25rem auto;
-  max-width: 550px;
+  max-width: 100%;
+}
+
+.post-content blockquote.twitter-tweet {
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-style: normal;
 }
 
 .post-content .twitter-tweet > a {
@@ -264,19 +274,68 @@ button {
   word-break: break-all;
 }
 
+.post-content .twitter-tweet[data-media-size="small"] {
+  width: 50%;
+}
+
+.post-content .twitter-tweet[data-media-size="medium"] {
+  width: 75%;
+}
+
+.post-content .twitter-tweet[data-media-size="large"] {
+  width: 100%;
+}
+
 .post-content .twitter-embed-mount iframe,
 .twitter-embed-editor .twitter-embed-mount iframe {
   margin: 0 auto !important;
+  width: 100% !important;
 }
 
 .twitter-embed-editor {
+  display: block;
   margin: 1rem 0;
   min-height: 120px;
+  max-width: 100%;
+}
+
+.twitter-embed-editor[data-media-align="center"],
+.post-content .twitter-tweet[data-media-align="center"] {
+  float: none;
+  clear: both;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.twitter-embed-editor[data-media-align="left"],
+.post-content .twitter-tweet[data-media-align="left"] {
+  float: left;
+  clear: left;
+  margin: 0.25rem 1.25rem 1rem 0;
+}
+
+.twitter-embed-editor[data-media-align="right"],
+.post-content .twitter-tweet[data-media-align="right"] {
+  float: right;
+  clear: right;
+  margin: 0.25rem 0 1rem 1.25rem;
+}
+
+.post-content .twitter-tweet[data-media-align="left"],
+.post-content .twitter-tweet[data-media-align="right"] {
+  box-sizing: border-box;
+  max-width: 50%;
+  clear: none;
 }
 
 .twitter-embed-editor .twitter-embed-mount {
   margin: 0 auto;
-  max-width: 550px;
+  max-width: 100%;
+}
+
+.twitter-embed-editor .twitter-embed-mount iframe,
+.post-content .twitter-embed-mount iframe {
+  max-width: 100% !important;
 }
 
 .twitter-embed-editor__link {

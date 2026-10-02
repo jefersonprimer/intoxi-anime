@@ -323,6 +323,7 @@ function ResizeMediaHandle({
 }) {
   const dragRef = useRef<{
     pointerId: number;
+    nodeType: string;
     side: "left" | "right";
     startWidth: number;
     containerWidth: number;
@@ -343,6 +344,7 @@ function ResizeMediaHandle({
 
   function getDragState(): {
     startWidth: number;
+    nodeType: string;
     containerWidth: number;
     viewLeft: number;
     containerLeft: number;
@@ -370,6 +372,7 @@ function ResizeMediaHandle({
     const containerRight = (parentRect?.right ?? viewRect.right) - viewLeft;
     return {
       startWidth: currentWidthPct(selection.node),
+      nodeType: selection.node.type.name,
       containerWidth,
       viewLeft,
       containerLeft,
@@ -391,6 +394,7 @@ function ResizeMediaHandle({
     }
     dragRef.current = {
       pointerId: event.pointerId,
+      nodeType: editor.state.selection.node.type.name,
       side,
       ...state,
     };
@@ -431,7 +435,11 @@ function ResizeMediaHandle({
     }
     if (next !== drag.startWidth) {
       drag.startWidth = next;
-      editor.chain().focus().updateAttributes("image", { width: next }).run();
+      editor
+        .chain()
+        .focus()
+        .updateAttributes(drag.nodeType, { width: next })
+        .run();
     }
   }
 
@@ -621,7 +629,11 @@ export function RichTextEditor({
       }
 
       const nodeTypeName = editor.state.selection.node.type.name;
-      if (nodeTypeName !== "image" && nodeTypeName !== "youtube") {
+      if (
+        nodeTypeName !== "image" &&
+        nodeTypeName !== "youtube" &&
+        nodeTypeName !== "twitter"
+      ) {
         if (lastMediaRef.current !== null) {
           lastMediaRef.current = null;
           setMediaAnchor(null);
@@ -905,7 +917,11 @@ export function RichTextEditor({
       return;
     }
     const nodeTypeName = selection.node.type.name;
-    if (nodeTypeName !== "image" && nodeTypeName !== "youtube") {
+    if (
+      nodeTypeName !== "image" &&
+      nodeTypeName !== "youtube" &&
+      nodeTypeName !== "twitter"
+    ) {
       return;
     }
     editor
@@ -921,7 +937,11 @@ export function RichTextEditor({
       return;
     }
     const nodeTypeName = selection.node.type.name;
-    if (nodeTypeName !== "image" && nodeTypeName !== "youtube") {
+    if (
+      nodeTypeName !== "image" &&
+      nodeTypeName !== "youtube" &&
+      nodeTypeName !== "twitter"
+    ) {
       return;
     }
     editor?.chain().focus().updateAttributes(nodeTypeName, { align }).run();
@@ -1556,7 +1576,9 @@ export function RichTextEditor({
           />
         ) : null}
 
-        {mediaAnchor && editor && selectedMediaType === "image" ? (
+        {mediaAnchor &&
+        editor &&
+        (selectedMediaType === "image" || selectedMediaType === "twitter") ? (
           <ResizeMediaHandle
             editor={editor}
             align={selectedMediaAlign}
