@@ -8,11 +8,13 @@ import { TwitterWidgets } from "@/components/TwitterWidgets";
 import { getSessionUser, isAuthorRole } from "@/lib/auth";
 import {
   categoryToSlug,
+  extractFirstImageUrl,
   formatPostDate,
   getPostPath,
   type Post,
 } from "@/lib/post-utils";
 import { getPostBySlug, getPosts } from "@/lib/posts";
+import { SITE_URL, SITE_NAME, SITE_LOGO } from "@/lib/site";
 
 type PostParams = {
   category: string;
@@ -67,9 +69,35 @@ export async function generateMetadata({
   const { category, year, month, day, slug } = await params;
   const post = await resolvePost({ category, year, month, day, slug });
 
+  const canonicalUrl = `${SITE_URL}${getPostPath(post)}`;
+  const ogImage =
+    post.bannerImageUrl ||
+    extractFirstImageUrl(post.contentHtml) ||
+    SITE_LOGO;
+  const description = post.summary ?? undefined;
+
   return {
-    title: `${post.title} - Intoxi Anime`,
-    alternates: { canonical: getPostPath(post) },
+    title: post.title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      type: "article",
+      url: canonicalUrl,
+      title: post.title,
+      description,
+      siteName: SITE_NAME,
+      locale: "pt_BR",
+      publishedTime: post.createdAt,
+      modifiedTime: post.updatedAt,
+      authors: post.author?.name ? [post.author.name] : undefined,
+      images: [{ url: ogImage, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 
@@ -86,6 +114,32 @@ export default async function PostPage({
   const categorySlug = categoryToSlug(post.category);
   const postTagSet = new Set(post.tags.map((tag) => tag.toLowerCase()));
   const otherPosts = allPosts.filter((item) => item.id !== post.id);
+
+  const canonicalUrl = `${SITE_URL}${getPostPath(post)}`;
+  const ogImage =
+    post.bannerImageUrl ||
+    extractFirstImageUrl(post.contentHtml) ||
+    SITE_LOGO;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    description: post.summary ?? undefined,
+    image: ogImage ? [ogImage] : undefined,
+    datePublished: post.createdAt,
+    dateModified: post.updatedAt,
+    url: canonicalUrl,
+    author: post.author?.name
+      ? [{ "@type": "Person", name: post.author.name }]
+      : [{ "@type": "Organization", name: SITE_NAME }],
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: { "@type": "ImageObject", url: SITE_LOGO },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+  };
 
   function sharedTagCount(item: Post) {
     return item.tags.reduce(
@@ -109,6 +163,10 @@ export default async function PostPage({
 
   return (
     <div className="min-h-screen bg-background px-4 xl:px-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main>
         <div className="mx-auto grid max-w-7xl gap-4 xl:gap-8 pt-12 lg:grid-cols-3">
           <article className="min-w-0 lg:col-span-2">
