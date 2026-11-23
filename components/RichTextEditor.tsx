@@ -394,7 +394,6 @@ function ResizeMediaHandle({
     }
     dragRef.current = {
       pointerId: event.pointerId,
-      nodeType: editor.state.selection.node.type.name,
       side,
       ...state,
     };
