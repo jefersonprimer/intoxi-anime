@@ -98,7 +98,7 @@ export function HeaderSearch() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Digite sua busca e pressione Enter..."
-                className="w-full border-b-2 border-header-border bg-transparent py-3 pl-8 pr-10 text-base font-medium text-header-fg outline-none transition-colors duration-200 placeholder:text-header-muted focus:border-[#1e73be] md:text-2xl"
+                className="w-full border-b-2 border-header-border bg-transparent py-3 pl-8 pr-10 text-base font-medium text-header-fg outline-none transition-colors duration-200 placeholder:text-header-muted focus:border-[#FC222E] md:text-2xl"
               />
               <button
                 type="button"

@@ -58,20 +58,12 @@ button {
   cursor: pointer;
 }
 
-.logo-theme-dark {
-  display: block;
+.site-logo {
+  filter: none;
 }
 
-.logo-theme-light {
-  display: none;
-}
-
-[data-theme="light"] .logo-theme-dark {
-  display: none;
-}
-
-[data-theme="light"] .logo-theme-light {
-  display: block;
+[data-theme="light"] .site-logo {
+  filter: invert(1);
 }
 
 .footer-logo {
@@ -86,11 +78,11 @@ button {
   position: relative;
   height: 6px;
   overflow: hidden;
-  background: #1e73be;
+  background: #FC222E;
 }
 
 ::selection {
-  background: #1e73be;
+  background: #FC222E;
   color: #ffffff;
 }
 
@@ -484,7 +476,7 @@ button {
 }
 
 .tbl-btn.is-active {
-  background: #1e73be;
+  background: #FC222E;
   color: #ffffff;
 }
 

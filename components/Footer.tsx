@@ -19,11 +19,11 @@ export function Footer() {
                 alt="Intoxi Anime"
                 width={2172}
                 height={724}
-                className="footer-logo h-12 w-auto object-contain"
+                className="footer-logo h-11 w-auto object-contain"
               />
             </Link>
             <p className="max-w-md text-sm text-header-muted">
-              Intoxi Anime - notícias, trailers e guias de temporada.
+              Anime News - Notícias de Animes, Mangás, Manhwas e Light Novels
             </p>
           </div>
 

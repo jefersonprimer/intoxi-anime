@@ -31,15 +31,7 @@ export async function Header() {
               alt="Intoxi Anime"
               width={2172}
               height={724}
-              className="logo-theme-dark h-14 w-auto object-contain"
-              priority
-            />
-            <Image
-              src="/logo-nome-light.png"
-              alt="Intoxi Anime"
-              width={2172}
-              height={724}
-              className="logo-theme-light h-14 w-auto object-contain"
+              className="site-logo h-12 w-auto object-contain"
               priority
             />
           </Link>
@@ -63,14 +55,14 @@ export async function Header() {
               <Link
                 key={category}
                 href={`/${categoryToSlug(category)}`}
-                className="flex-1 rounded-tl-md rounded-tr-md px-3 py-2 text-center text-sm font-bold text-header-fg transition hover:bg-[#1e73be] hover:text-white"
+                className="flex-1 rounded-tl-md rounded-tr-md px-3 py-2 text-center text-sm font-bold text-header-fg transition hover:bg-[#FC222E] hover:text-white"
               >
                 {category}
               </Link>
             ))}
             <Link
               href={`/${SEASON_GUIDES_SLUG}`}
-              className="flex-1 rounded-tl-md rounded-tr-md px-3 py-2 text-center text-sm font-bold text-header-fg transition hover:bg-[#1e73be] hover:text-white"
+              className="flex-1 rounded-tl-md rounded-tr-md px-3 py-2 text-center text-sm font-bold text-header-fg transition hover:bg-[#FC222E] hover:text-white"
             >
               {SEASON_GUIDES_CATEGORY}
             </Link>

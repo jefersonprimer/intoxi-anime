@@ -5,8 +5,9 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Intoxi Anime - Tudo sobre animes, tops, light novels",
-  description: "Noticias, trailers e guias de temporada sobre animes.",
+  title: "Anime News | Notícias de Animes, Mangás, Manhwas e Light Novels",
+  description:
+    "Fique por dentro do universo otaku! Notícias, lançamentos, temporadas, análises e novidades sobre animes, mangás, manhwas e light novels. Tudo em um só lugar!",
   other: {
     "google-adsense-account": "ca-pub-8339583862253102",
   },
@@ -14,7 +15,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" data-theme="dark" suppressHydrationWarning className="h-full antialiased">
+    <html
+      lang="pt-BR"
+      data-theme="dark"
+      suppressHydrationWarning
+      className="h-full antialiased"
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
