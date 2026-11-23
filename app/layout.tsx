@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [SITE_LOGO],
   },
+  verification: {
+    google: "iFNvvYLli4pLzw8Ne01U4uBkal2KzUsQdMzQ8Wjcy5M",
+  },
   other: {
     "google-adsense-account": "ca-pub-8339583862253102",
   },
