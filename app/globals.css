@@ -78,11 +78,11 @@ button {
   position: relative;
   height: 6px;
   overflow: hidden;
-  background: #FC222E;
+  background: #fc222e;
 }
 
 ::selection {
-  background: #FC222E;
+  background: #fc222e;
   color: #ffffff;
 }
 
@@ -184,9 +184,14 @@ button {
   width: 100%;
 }
 
-.post-content img[data-media-size="small"],
+.post-content img[data-media-size="small"] {
+  width: 240px;
+  height: 360px;
+  object-fit: cover;
+}
+
 .post-content iframe[data-media-size="small"] {
-  width: 50%;
+  width: 240px;
 }
 
 .post-content img[data-media-size="medium"],
@@ -267,7 +272,7 @@ button {
 }
 
 .post-content .twitter-tweet[data-media-size="small"] {
-  width: 50%;
+  width: 240px;
 }
 
 .post-content .twitter-tweet[data-media-size="medium"] {
@@ -476,7 +481,7 @@ button {
 }
 
 .tbl-btn.is-active {
-  background: #FC222E;
+  background: #fc222e;
   color: #ffffff;
 }
 

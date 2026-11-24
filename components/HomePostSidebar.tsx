@@ -86,7 +86,6 @@ export function HomePostSidebar({
       >
         {allPostsLabel}
       </Link>
-      <PostSidebarBanner />
     </aside>
   );
 }

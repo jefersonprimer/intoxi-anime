@@ -14,7 +14,6 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-background">
       <main>
-        <HomeBanner />
         <div className="mx-auto w-full max-w-7xl px-4 xl:px-0">
           <div className="grid grid-cols-1 py-2 lg:grid-cols-14">
             <div className="order-2 min-w-0 lg:order-none lg:col-span-4">
